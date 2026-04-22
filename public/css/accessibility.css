@@ -1,0 +1,82 @@
+/* ========================================
+   MEJORAS DE ACCESIBILIDAD
+   ======================================== */
+
+/* Skip to Content Link */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--bs-primary, #FF4500);
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 100;
+    border-radius: 0 0 4px 0;
+    font-weight: 600;
+    transition: top 0.3s ease;
+}
+
+.skip-to-content:focus {
+    top: 0;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Focus Visible para navegación por teclado */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #FF4500;
+    outline-offset: 2px;
+}
+
+/* Mejorar contraste de botones */
+.btn-primary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 69, 0, 0.5);
+}
+
+/* Loading state para formulario */
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Newsletter Form Feedback */
+.newsletter-success {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: none;
+}
+
+.newsletter-error {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: none;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .skip-to-content {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .skip-to-content,
+    .back-to-top,
+    .btn-search,
+    #searchModal {
+        display: none !important;
+    }
+}

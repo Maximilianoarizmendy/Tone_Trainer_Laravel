@@ -1,4 +1,4 @@
-    FROM php:8.2-cli
+FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -16,7 +16,15 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN npm install && npm run build
+RUN npm install
+RUN npm run build
+
+RUN chmod -R 775 storage bootstrap/cache
+
+RUN php artisan config:clear
+RUN php artisan cache:clear
+RUN php artisan view:clear
+RUN php artisan route:clear
 
 EXPOSE 10000
 

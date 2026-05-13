@@ -8,11 +8,6 @@ class WorkoutCalendar extends Model
 {
     protected $table = 'workout_calendar';
 
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'user_id', 'workout_date', 'workout_type', 'title',
         'notes', 'completed', 'duration_minutes', 'calories_burned',

@@ -8,11 +8,6 @@ class TrainingPlan extends Model
 {
     protected $table = 'training_plan';
 
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'user_id', 'assigned_by', 'day_group', 'exercise',
         'series', 'reps', 'description', 'status',

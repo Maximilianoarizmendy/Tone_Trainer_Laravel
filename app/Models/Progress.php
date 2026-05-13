@@ -8,14 +8,9 @@ class Progress extends Model
 {
     protected $table = 'progress';
 
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
-
     protected $fillable = [
-        'user_id', 'weight', 'body_fat', 'muscle_mass',
-        'bmi', 'water_intake', 'protein_intake',
+        'user_id', 'weight', 'height', 'body_fat', 'muscle_mass',
+        'bmi', 'water_intake', 'protein_intake', 'notes',
     ];
 
     protected $casts = [

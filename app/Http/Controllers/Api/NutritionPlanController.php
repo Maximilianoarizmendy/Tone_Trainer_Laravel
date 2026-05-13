@@ -34,7 +34,7 @@ class NutritionPlanController extends Controller
         $targetUser = $this->resolveTargetUser($request);
 
         $meals = NutritionPlan::where('user_id', $targetUser->id)
-            ->orderByRaw("FIELD(day_of_week, 'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'), meal_type")
+            ->orderByRaw("CASE day_of_week WHEN 'Lunes' THEN 1 WHEN 'Martes' THEN 2 WHEN 'Miércoles' THEN 3 WHEN 'Jueves' THEN 4 WHEN 'Viernes' THEN 5 WHEN 'Sábado' THEN 6 WHEN 'Domingo' THEN 7 ELSE 8 END, meal_type")
             ->get();
 
         return response()->json(['success' => true, 'data' => $meals]);

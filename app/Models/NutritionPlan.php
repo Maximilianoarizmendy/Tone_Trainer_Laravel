@@ -8,11 +8,6 @@ class NutritionPlan extends Model
 {
     protected $table = 'nutrition_plan';
 
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'user_id', 'day_of_week', 'meal_type', 'food_name',
         'calories', 'protein', 'carbs', 'fats',

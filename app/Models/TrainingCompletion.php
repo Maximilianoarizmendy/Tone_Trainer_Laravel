@@ -8,10 +8,7 @@ class TrainingCompletion extends Model
 {
     protected $table = 'training_completions';
 
-    public $timestamps = false;
-
-    const CREATED_AT = 'completed_at';
-    const UPDATED_AT = null;
+    // Timestamps habilitados
 
     protected $fillable = [
         'user_id', 'exercise_id', 'completed_at',

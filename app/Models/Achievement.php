@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Achievement extends Model
 {
-    public $timestamps = false;
-
     protected $fillable = [
         'user_id', 'badge_name', 'badge_icon', 'description',
     ];
@@ -15,9 +13,6 @@ class Achievement extends Model
     protected $casts = [
         'earned_at' => 'datetime',
     ];
-
-    const CREATED_AT = 'earned_at';
-    const UPDATED_AT = null;
 
     public function user()
     {

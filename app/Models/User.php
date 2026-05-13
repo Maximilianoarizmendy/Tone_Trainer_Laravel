@@ -11,7 +11,6 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $table = 'users';
-    public $timestamps = false;
 
     // Rol constants
     const ROLE_USER         = 1;
@@ -23,7 +22,7 @@ class User extends Authenticatable
         'name', 'email', 'password', 'role', 'active',
         'birthdate', 'profile_photo', 'medical_history',
         'phone', 'location', 'goal', 'level',
-        'weight', 'height', 'imc', 'trainer',
+        'weight', 'height', 'imc',
         'membership_start', 'nutritionist_id', 'trainer_id',
         'reset_token', 'reset_expires',
     ];

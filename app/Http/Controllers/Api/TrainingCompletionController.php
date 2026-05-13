@@ -100,7 +100,7 @@ class TrainingCompletionController extends Controller
                 'training_completions.exercise_id',
                 'training_plan.exercise as exercise_name',
                 'training_plan.day_group',
-                \DB::raw("DATE_FORMAT(training_completions.completed_at, '%Y-%m-%d %H:%i') as completed_at")
+                \DB::raw("TO_CHAR(training_completions.completed_at, 'YYYY-MM-DD HH24:MI') as completed_at")
             )
             ->orderByDesc('training_completions.completed_at')
             ->limit(50)

@@ -31,7 +31,6 @@ return new class extends Migration
             $table->decimal('weight', 5, 2)->nullable();
             $table->decimal('height', 5, 2)->nullable();
             $table->decimal('imc', 5, 2)->nullable();
-            $table->string('trainer', 100)->nullable(); // Campo legacy?
             $table->date('membership_start')->nullable();
             $table->string('reset_token')->nullable();
             $table->dateTime('reset_expires')->nullable();

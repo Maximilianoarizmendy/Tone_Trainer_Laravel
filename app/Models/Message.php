@@ -6,10 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
+    // Timestamps habilitados
 
     protected $fillable = [
         'sender_id', 'receiver_id', 'message', 'is_read',

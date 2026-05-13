@@ -41,6 +41,8 @@ class User extends Authenticatable
         'weight'            => 'decimal:2',
         'height'            => 'decimal:2',
         'imc'               => 'decimal:2',
+        'trainer_id'        => 'integer',
+        'nutritionist_id'   => 'integer',
     ];
 
     // ── Helpers de rol ───────────────────────────────────────────

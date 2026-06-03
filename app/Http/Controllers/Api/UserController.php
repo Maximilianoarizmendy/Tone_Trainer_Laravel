@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
 
+/**
+ * Controlador API para la Gestión de Usuarios.
+ * 
+ * Permite a los administradores y al staff (entrenadores/nutricionistas)
+ * listar, crear, modificar y desactivar cuentas de usuario. Incluye la
+ * lógica para asignar automáticamente el entrenador o nutricionista
+ * correspondiente al crear un usuario nuevo.
+ */
 class UserController extends Controller
 {
     public function index(Request $request): JsonResponse

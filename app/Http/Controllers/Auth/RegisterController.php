@@ -22,7 +22,6 @@ class RegisterController extends Controller
             'email'            => 'required|email|unique:users,email',
             'password'         => [
                 'required', 'confirmed', 'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W\d]).{8,}$/',
             ],
             'birthdate'        => 'nullable|date',
             'phone'            => 'nullable|string|max:20',
@@ -40,7 +39,6 @@ class RegisterController extends Controller
             'password.required'          => 'La contraseña es obligatoria.',
             'password.confirmed'         => 'Las contraseñas no coinciden.',
             'password.min'               => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.regex'             => 'La contraseña debe tener al menos una mayúscula, una minúscula y un carácter especial o número.',
         ]);
 
         User::create([

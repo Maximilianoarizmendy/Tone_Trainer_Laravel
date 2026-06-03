@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo TrainingPlan
+ * 
+ * Configura los ejercicios estáticos asignados por un entrenador a un usuario.
+ * Detalla el nombre del ejercicio, número de series, repeticiones y al grupo
+ * de entrenamiento diario al que pertenece.
+ */
 class TrainingPlan extends Model
 {
     protected $table = 'training_plan';

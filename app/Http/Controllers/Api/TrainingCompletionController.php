@@ -10,11 +10,21 @@ use App\Models\TrainingCompletion;
 use App\Models\User;
 use Carbon\Carbon;
 
+/**
+ * Controlador API para Seguimiento de Asistencia Virtual.
+ * 
+ * Gestiona el momento en que un usuario marca un ejercicio como completado.
+ * Devuelve el historial, calcula estadísticas de adherencia al plan
+ * y mide las "rachas" (días consecutivos de entrenamiento).
+ */
 class TrainingCompletionController extends Controller
 {
     public function markCompleted(Request $request): JsonResponse
     {
-        $request->validate(['exercise_id' => 'required|integer']);
+        $request->validate([
+            'exercise_id' => 'required|integer',
+            'notes' => 'nullable|string|max:500'
+        ]);
 
         $exercise = TrainingPlan::where('id', $request->exercise_id)
             ->where('user_id', auth()->id())
@@ -24,7 +34,13 @@ class TrainingCompletionController extends Controller
             'user_id'      => auth()->id(),
             'exercise_id'  => $exercise->id,
             'completed_at' => now(),
+            'notes'        => $request->notes,
         ]);
+
+        \App\Models\RoutineAttendance::updateOrCreate(
+            ['user_id' => auth()->id(), 'training_plan_id' => $exercise->id, 'date' => today()],
+            ['status' => 'present']
+        );
 
         return response()->json(['success' => true, 'message' => 'Ejercicio marcado como completado.']);
     }

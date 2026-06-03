@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo WorkoutCalendar
+ * 
+ * Permite al usuario agendar rutinas específicas para un día particular.
+ * Contiene un título, una nota opcional y la fecha/hora en la que
+ * planea realizar el entrenamiento.
+ */
 class WorkoutCalendar extends Model
 {
     protected $table = 'workout_calendar';

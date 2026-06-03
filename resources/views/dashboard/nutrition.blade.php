@@ -88,7 +88,29 @@
 </div>
 @endif
 
-{{-- Lista de comidas del día --}}
+{{-- Diario de Consumo (solo para el usuario) --}}
+@if($user->isUser())
+<div class="section-header" style="margin-top: 30px;">
+    <h2>🍽️ Diario de Consumo (Hoy)</h2>
+</div>
+<div class="add-meal-form">
+    <div class="form-row">
+        <div class="form-group" style="flex:2;">
+            <input type="text" id="logFoodName" placeholder="¿Qué comiste hoy?">
+        </div>
+        <div class="form-group" style="flex:1;">
+            <input type="number" id="logServings" placeholder="Porciones (ej: 1)" step="0.1" min="0.1">
+        </div>
+        <button class="btn-primary" onclick="logFood()">Registrar</button>
+    </div>
+</div>
+<div id="foodLogsContainer"></div>
+@endif
+
+{{-- Lista de comidas del plan --}}
+<div class="section-header" style="margin-top: 30px;">
+    <h2>📅 Plan de la Semana</h2>
+</div>
 <div id="mealsContainer"></div>
 @endsection
 
@@ -183,6 +205,73 @@ async function deleteMeal(id) {
     showToast('🗑️ Comida eliminada'); loadMeals();
 }
 
+// === DIARIO DE CONSUMO ===
+let foodLogs = [];
+
+async function loadFoodLogs() {
+    const res = await fetch('/api/food-logs');
+    const data = await res.json();
+    if (data.success) {
+        foodLogs = data.data;
+        renderFoodLogs();
+    }
+}
+
+function renderFoodLogs() {
+    const container = document.getElementById('foodLogsContainer');
+    if (!container) return;
+    
+    if (!foodLogs.length) {
+        container.innerHTML = '<div class="empty-state"><p>No has registrado comidas hoy.</p></div>';
+        return;
+    }
+
+    let html = '<div class="meal-card">';
+    foodLogs.forEach(log => {
+        html += `<div class="meal-row">
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <input type="checkbox" ${log.is_consumed ? 'checked' : ''} onchange="toggleFoodLog(${log.id}, this.checked)" style="accent-color: var(--primary); width:18px; height:18px; cursor:pointer;">
+                <div class="meal-name" style="${log.is_consumed ? 'text-decoration: line-through; color: var(--muted);' : ''}">${log.food_name} <small>(${log.servings} porciones)</small></div>
+            </div>
+            <button class="btn-del-meal" onclick="deleteFoodLog(${log.id})">🗑️</button>
+        </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function logFood() {
+    const foodName = document.getElementById('logFoodName').value;
+    const servings = document.getElementById('logServings').value || 1;
+    if (!foodName) return showToast('⚠️ Ingresa el nombre del alimento');
+
+    const res = await fetch('/api/food-logs', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ food_name: foodName, servings })
+    });
+    const data = await res.json();
+    if (data.success) {
+        document.getElementById('logFoodName').value = '';
+        document.getElementById('logServings').value = '';
+        loadFoodLogs();
+        showToast('✅ Añadido a tu diario');
+    }
+}
+
+async function toggleFoodLog(id, isConsumed) {
+    await fetch(`/api/food-logs/${id}/consume`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ is_consumed: isConsumed })
+    });
+    loadFoodLogs();
+}
+
+async function deleteFoodLog(id) {
+    if(!confirm('¿Eliminar registro?')) return;
+    await fetch(`/api/food-logs/${id}`, { method: 'DELETE' });
+    loadFoodLogs();
+}
+
 async function resetPlan() {
     if (!confirm('¿Resetear todo el plan nutricional?')) return;
     await fetch('/api/nutrition/meals', { method: 'DELETE' });
@@ -197,5 +286,6 @@ function showToast(msg) {
 }
 
 loadMeals();
+if(typeof loadFoodLogs === 'function') loadFoodLogs();
 </script>
 @endsection

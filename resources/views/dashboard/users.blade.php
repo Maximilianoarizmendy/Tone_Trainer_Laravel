@@ -5,10 +5,62 @@
 @section('content')
 <div id="usersAlert"></div>
 
+@if($errors->any())
+    <div style="padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:13px; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#ef4444;">
+        <ul style="margin: 0; padding-left: 20px;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+@if($errors->any())
+    <div style="padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:13px; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#ef4444;">
+        <ul style="margin: 0; padding-left: 20px;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 @if($myRole !== 'user')
 <div class="toolbar">
     <button onclick="showModal()" class="btn-add"><i class="bi bi-plus-circle"></i> Nuevo Usuario</button>
+    @if($myRole === 'admin')
+        <button onclick="showTrainerModal()" class="btn-add" style="background: var(--surface2); border: 1px solid var(--border); margin-left: 8px;"><i class="bi bi-person-badge"></i> Registrar Entrenador</button>
+        <button onclick="showNutritionistModal()" class="btn-add" style="background: var(--surface2); border: 1px solid var(--border); margin-left: 8px;"><i class="bi bi-person-hearts"></i> Registrar Nutricionista</button>
+    @endif
 </div>
+@endif
+
+@if($myRole === 'admin')
+    @php
+        $unverifiedTrainers = $users->where('role', 4)->where('is_verified', false);
+    @endphp
+    @if($unverifiedTrainers->count() > 0)
+        <div style="background: rgba(250,204,21,.1); border: 1px solid rgba(250,204,21,.3); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+            <h4 style="color: #facc15; margin-top: 0; margin-bottom: 12px;"><i class="bi bi-exclamation-triangle"></i> Entrenadores pendientes de verificación</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                @foreach($unverifiedTrainers as $ut)
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 10px 16px; border-radius: 8px;">
+                        <div>
+                            <strong style="color: #fff;">{{ $ut->name }}</strong> 
+                            <span style="color: var(--muted); font-size: 12px;">({{ $ut->email }})</span>
+                        </div>
+                        <form action="{{ route('dashboard.admin.trainers.verify') }}" method="POST" style="margin: 0;">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ $ut->id }}">
+                            <button type="submit" style="padding: 6px 12px; background: #22c55e; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                <i class="bi bi-check-circle"></i> Aprobar Entrenador
+                            </button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 @endif
 
 <div class="users-grid">
@@ -33,10 +85,31 @@
         @if($myRole !== 'user')
         <div class="user-actions">
             <button onclick="editUser({{ $u->id }})" class="btn-edit"><i class="bi bi-pencil"></i> Editar</button>
-            @if($myRole === 'admin')
+            @if($myRole === 'admin' || $myRole === 'nutritionist')
             <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
             @endif
+            @if($myRole === 'admin' || $myRole === 'nutritionist')
+            <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
+            @endif
         </div>
+        
+        @if($myRole === 'admin' && $u->role === 1)
+            <div style="margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px;">
+                <form action="{{ route('dashboard.admin.trainers.assign') }}" method="POST" style="display: flex; gap: 8px; margin: 0;">
+                    @csrf
+                    <input type="hidden" name="user_id" value="{{ $u->id }}">
+                    <select name="trainer_id" class="form-control" style="padding: 6px; font-size: 11px;">
+                        <option value="">Sin entrenador</option>
+                        @foreach($trainers as $trainer)
+                            <option value="{{ $trainer->id }}" {{ $u->trainer_id === $trainer->id ? 'selected' : '' }}>
+                                {{ $trainer->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn-save" style="padding: 6px 12px; font-size: 11px; flex: none;">Asignar</button>
+                </form>
+            </div>
+        @endif
         @endif
     </div>
     @empty
@@ -118,6 +191,84 @@
     </div>
 </div>
 
+<!-- Modal Registrar Entrenador (Manual) -->
+<div id="trainerModal" class="modal-hidden">
+    <div class="modal-content">
+        <h3><i class="bi bi-person-badge"></i> Registrar Entrenador (Verificado)</h3>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">
+            Al registrar un entrenador desde aquí, quedará automáticamente verificado y podrá comenzar a aceptar clientes.
+        </p>
+        <form action="{{ route('dashboard.admin.trainers.store') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label>Nombre Completo *</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Correo Electrónico *</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña *</label>
+                <input type="password" name="password" class="form-control" required minlength="6">
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="closeTrainerModal()" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">Guardar Entrenador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Registrar Nutricionista (Manual) -->
+<div id="nutritionistModal" class="modal-hidden">
+    <div class="modal-content">
+        <h3><i class="bi bi-person-hearts"></i> Registrar Nutricionista</h3>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">
+            Al registrar un nutricionista desde aquí, quedará automáticamente verificado.
+        </p>
+        <form action="{{ route('dashboard.admin.nutritionists.store') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label>Nombre Completo *</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Correo Electrónico *</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña *</label>
+                <input type="password" name="password" class="form-control" required minlength="6">
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="closeNutritionistModal()" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">Guardar Nutricionista</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nota Nutricionista -->
+<div id="noteModal" class="modal-hidden">
+    <div class="modal-content">
+        <h3><i class="bi bi-pencil-square"></i> Nota Nutricionista</h3>
+        <form action="{{ route('dashboard.admin.nutritionist.notes') }}" method="POST" id="noteForm">
+            @csrf
+            <input type="hidden" name="target_user_id" id="noteUserId">
+            <div class="form-group">
+                <label>Nota</label>
+                <textarea id="noteTextarea" name="note" rows="5" class="form-control" placeholder="Escribe recomendaciones..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" onclick="closeNoteModal()" class="btn-cancel">Cancelar</button>
+                <button type="button" onclick="generateAINote()" class="btn-ai">🧠 Generar IA</button>
+                <button type="submit" class="btn-save">Guardar Nota</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
 .toolbar { margin-bottom: 16px; }
 .btn-add { padding: 10px 20px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 13px; }
@@ -138,6 +289,7 @@
 .user-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
 .btn-edit { flex: 1; padding: 8px; background: var(--surface2); border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 12px; }
 .btn-delete { padding: 8px 12px; background: rgba(239,68,68,.15); border: none; border-radius: 6px; color: #dc3545; cursor: pointer; }
+.btn-note { flex: 1; padding: 8px; background: var(--surface2); border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 12px; }
 .empty-state { text-align: center; color: var(--muted); padding: 40px; grid-column: 1 / -1; }
 .modal-hidden { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.7); z-index: 1000; align-items: center; justify-content: center; }
 .modal-content { background: var(--surface); border-radius: 12px; padding: 24px; max-width: 480px; width: 95%; max-height: 90vh; overflow-y: auto; }
@@ -149,6 +301,7 @@
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn-cancel { flex: 1; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: #fff; cursor: pointer; }
 .btn-save { flex: 1; padding: 10px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; }
+.btn-ai { flex: 1; padding: 10px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 12px; margin-left: 4px; }
 @media (max-width: 600px) {
     .users-grid { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
@@ -178,6 +331,22 @@ function showModal(user = null) {
     document.getElementById('height').value = user?.height || '';
     document.getElementById('role').value = user?.role || 1;
     document.getElementById('userModal').style.display = 'flex';
+}
+
+function showTrainerModal() {
+    document.getElementById('trainerModal').style.display = 'flex';
+}
+
+function closeTrainerModal() {
+    document.getElementById('trainerModal').style.display = 'none';
+}
+
+function showNutritionistModal() {
+    document.getElementById('nutritionistModal').style.display = 'flex';
+}
+
+function closeNutritionistModal() {
+    document.getElementById('nutritionistModal').style.display = 'none';
 }
 
 function closeModal() {
@@ -243,6 +412,40 @@ function showAlert(msg, type) {
     const a = document.getElementById('usersAlert');
     a.innerHTML = `<div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;background:${type==='success'?'rgba(34,197,94,.12)':'rgba(239,68,68,.12)'};border:1px solid ${type==='success'?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'};color:${type==='success'?'#22c55e':'#ef4444'}">${msg}</div>`;
     setTimeout(() => a.innerHTML = '', 4000);
+}
+function showNoteModal(userId, existingNote) {
+    document.getElementById('noteUserId').value = userId;
+    document.getElementById('noteTextarea').value = existingNote;
+    document.getElementById('noteModal').style.display = 'flex';
+}
+
+function generateAINote() {
+    const userId = document.getElementById('noteUserId').value;
+    if (!userId) { showAlert('Usuario no seleccionado.', 'error'); return; }
+    fetch(`{{ route('dashboard.admin.nutritionist.ai_notes') }}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ target_user_id: userId })
+    })
+    .then(r => r.json())
+    .then(r => {
+        if (r.success) {
+            document.getElementById('noteTextarea').value = r.note;
+            showAlert('Nota generada por IA.', 'success');
+        } else {
+            showAlert(r.message || 'Error al generar la nota.', 'error');
+        }
+    })
+    .catch(() => showAlert('Error de red al contactar IA.', 'error'));
+}
+
+    document.getElementById('noteModal').style.display = 'none';
+    document.getElementById('noteForm').reset();
 }
 </script>
 @endsection

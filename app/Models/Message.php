@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo Message
+ * 
+ * Representa un mensaje de chat directo enviado entre dos usuarios de la
+ * plataforma (por ejemplo, cliente y entrenador personal).
+ * Contiene el texto y un indicador de lectura (is_read).
+ */
 class Message extends Model
 {
     public $timestamps = false;

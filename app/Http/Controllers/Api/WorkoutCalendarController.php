@@ -8,6 +8,13 @@ use Illuminate\Http\JsonResponse;
 use App\Models\WorkoutCalendar;
 use Carbon\Carbon;
 
+/**
+ * Controlador API para el Calendario de Entrenamientos.
+ * 
+ * Permite a los usuarios programar sesiones de ejercicio en fechas
+ * y horas específicas. Permite crear, modificar, eliminar y marcar
+ * eventos como completados en su agenda personal.
+ */
 class WorkoutCalendarController extends Controller
 {
     public function index(): JsonResponse

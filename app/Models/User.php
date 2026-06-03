@@ -6,6 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Modelo User
+ * 
+ * Representa a todos los actores del sistema Tone Trainer, incluyendo
+ * clientes (usuarios regulares), entrenadores, nutricionistas y administradores.
+ * Gestiona la autenticación, roles, perfil físico y las relaciones con
+ * otras entidades como rutinas, dietas, pagos y retos.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property int $role
+ * @property bool $active
+ * @property bool $is_verified
+ * @property string|null $verification_document
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -25,7 +42,8 @@ class User extends Authenticatable
         'phone', 'location', 'goal', 'level',
         'weight', 'height', 'imc', 'trainer',
         'membership_start', 'nutritionist_id', 'trainer_id',
-        'reset_token', 'reset_expires',
+        'reset_token', 'reset_expires', 'is_verified', 'verification_document',
+        'verification_status', 'nutritionist_notes'
     ];
 
     protected $hidden = [
@@ -43,6 +61,31 @@ class User extends Authenticatable
         'height'            => 'decimal:2',
         'imc'               => 'decimal:2',
     ];
+
+    // ── Mutators para cifrado (Req 35) ───────────────────────────
+    public function getPhoneAttribute($value) {
+        try { return $value ? \Illuminate\Support\Facades\Crypt::decryptString($value) : null; } 
+        catch (\Illuminate\Contracts\Encryption\DecryptException $e) { return $value; }
+    }
+    public function setPhoneAttribute($value) {
+        $this->attributes['phone'] = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null;
+    }
+
+    public function getMedicalHistoryAttribute($value) {
+        try { return $value ? \Illuminate\Support\Facades\Crypt::decryptString($value) : null; } 
+        catch (\Illuminate\Contracts\Encryption\DecryptException $e) { return $value; }
+    }
+    public function setMedicalHistoryAttribute($value) {
+        $this->attributes['medical_history'] = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null;
+    }
+
+    public function getVerificationDocumentAttribute($value) {
+        try { return $value ? \Illuminate\Support\Facades\Crypt::decryptString($value) : null; } 
+        catch (\Illuminate\Contracts\Encryption\DecryptException $e) { return $value; }
+    }
+    public function setVerificationDocumentAttribute($value) {
+        $this->attributes['verification_document'] = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : null;
+    }
 
     // ── Helpers de rol ───────────────────────────────────────────
     public function isUser(): bool        { return $this->role === self::ROLE_USER; }
@@ -133,5 +176,22 @@ class User extends Authenticatable
     public function assignedUsers()
     {
         return $this->hasMany(User::class, 'trainer_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function createdChallenges()
+    {
+        return $this->hasMany(Challenge::class, 'trainer_id');
+    }
+
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class)
+            ->withPivot(['current_progress', 'completed', 'completed_at'])
+            ->withTimestamps();
     }
 }

@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo Goal
+ * 
+ * Representa una meta u objetivo físico/deportivo establecido por el usuario.
+ * Las metas tienen un valor objetivo y una fecha límite, y calculan automáticamente
+ * su porcentaje de progreso en base al valor actual registrado.
+ */
 class Goal extends Model
 {
     public $timestamps = false;

@@ -8,6 +8,13 @@ use Illuminate\Http\JsonResponse;
 use App\Models\Goal;
 use App\Models\Achievement;
 
+/**
+ * Controlador API para la gestión de Metas (Goals) e Insignias (Achievements).
+ * 
+ * Permite a los usuarios crear, leer, actualizar y eliminar sus objetivos de fitness.
+ * Además, contiene la lógica para calcular el progreso de una meta y otorgar
+ * recompensas virtuales (insignias) cuando el usuario alcanza el 100%.
+ */
 class GoalController extends Controller
 {
     // Badges por categoría (igual que goals_api.php)

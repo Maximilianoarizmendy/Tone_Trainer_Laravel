@@ -53,10 +53,20 @@ Route::middleware('auth')->group(function () {
         Route::delete('/meals',           [NutritionPlanController::class, 'reset']);
     });
 
+    // === FOOD LOGS ===
+    Route::prefix('food-logs')->group(function () {
+        Route::get('/', [\App\Http\Controllers\FoodLogController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\FoodLogController::class, 'store']);
+        Route::post('/{id}/consume', [\App\Http\Controllers\FoodLogController::class, 'consume']);
+        Route::delete('/{id}', [\App\Http\Controllers\FoodLogController::class, 'destroy']);
+    });
+
     // === PROGRESS ===
     Route::prefix('progress')->group(function () {
         Route::get('/metrics',            [ProgressController::class, 'getMetrics']);
+        Route::get('/compare',            [ProgressController::class, 'compare']);
         Route::post('/metrics',           [ProgressController::class, 'updateMetrics']);
+        Route::put('/metrics/{id}/validate', [ProgressController::class, 'validateProgress']);
     });
 
     // === TRAINING COMPLETIONS ===
@@ -67,6 +77,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/stats',              [TrainingCompletionController::class, 'stats']);
         Route::get('/history',            [TrainingCompletionController::class, 'history']);
     });
+
+    // === ATTENDANCE (REPORT) ===
+    Route::get('/attendance',             [\App\Http\Controllers\RoutineAttendanceController::class, 'index']);
 
     // === TRAINING PLAN (ejercicios asignados) ===
     Route::get('/training-plan',          [TrainingPlanController::class, 'index']);
@@ -81,6 +94,44 @@ Route::middleware('auth')->group(function () {
         Route::get('/',                   [SettingsController::class, 'show']);
         Route::post('/',                  [SettingsController::class, 'update']);
         Route::post('/deactivate',       [SettingsController::class, 'destroyAccount']);
+    });
+
+    // === MEMBERSHIPS ===
+    Route::prefix('memberships')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\MembershipController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\MembershipController::class, 'store']);
+        Route::put('/{id}', [\App\Http\Controllers\Api\MembershipController::class, 'update']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\MembershipController::class, 'destroy']);
+    });
+
+    // === PAYMENTS ===
+    Route::prefix('payments')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\PaymentController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\PaymentController::class, 'store']);
+        Route::put('/{id}', [\App\Http\Controllers\Api\PaymentController::class, 'update']);
+    });
+
+    // === CHALLENGES ===
+    Route::prefix('challenges')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\ChallengeController::class, 'index']);
+        Route::get('/my-challenges', [\App\Http\Controllers\Api\ChallengeController::class, 'myChallenges']);
+        Route::post('/', [\App\Http\Controllers\Api\ChallengeController::class, 'store']);
+        Route::post('/{id}/join', [\App\Http\Controllers\Api\ChallengeController::class, 'join']);
+        Route::post('/{id}/progress', [\App\Http\Controllers\Api\ChallengeController::class, 'updateProgress']);
+    });
+
+    // === REPORTS ===
+    Route::get('/reports', [\App\Http\Controllers\Api\ReportController::class, 'index']);
+
+    // === RANKING ===
+    Route::get('/ranking', [\App\Http\Controllers\Api\RankingController::class, 'index']);
+
+    // === NOTIFICATIONS ===
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+        Route::post('/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+        Route::post('/broadcast', [\App\Http\Controllers\Api\NotificationController::class, 'broadcast']);
+        Route::post('/send/{userId}', [\App\Http\Controllers\Api\NotificationController::class, 'sendToUser']);
     });
 
     // === USERS CRUD ===

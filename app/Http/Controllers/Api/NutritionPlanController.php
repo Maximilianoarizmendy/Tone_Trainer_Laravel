@@ -10,6 +10,13 @@ use App\Models\User;
 use App\Mail\MealPlanNotification;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Controlador API para Planes Nutricionales.
+ * 
+ * Permite a los nutricionistas asignar comidas específicas a los usuarios.
+ * Integra alertas mediante correo electrónico y notificaciones In-App
+ * cuando un plan es creado, modificado o reseteado.
+ */
 class NutritionPlanController extends Controller
 {
     private function resolveTargetUser(Request $request): User
@@ -76,6 +83,12 @@ class NutritionPlanController extends Controller
             } catch (\Exception $e) {
                 \Log::warning('Meal plan email failed: ' . $e->getMessage());
             }
+
+            // Notificación In-App (Req 15)
+            $targetUser->notify(new \App\Notifications\AppNotification(
+                'Plan de Nutrición Actualizado',
+                'Tu nutricionista ha agregado nuevos alimentos a tu plan.'
+            ));
         }
 
         return response()->json(['success' => true, 'id' => $meal->id]);

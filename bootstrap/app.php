@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
+        // Excluir webhook de Stripe de la verificación CSRF
+        $middleware->validateCsrfTokens(except: [
+            'stripe/webhook',
+        ]);
+
         // Las APIs usan sesiones (no tokens), así que compartimos el middleware de sesión
         $middleware->api(prepend: [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,

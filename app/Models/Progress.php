@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo Progress
+ * 
+ * Registra el historial de las métricas físicas y corporales de un usuario,
+ * como peso, porcentaje de grasa, masa muscular, IMC y consumo de agua/proteínas.
+ * Permite a los entrenadores validar estas métricas y dejar retroalimentación.
+ */
 class Progress extends Model
 {
     protected $table = 'progress';
@@ -31,5 +38,10 @@ class Progress extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeBetweenDates($query, $from, $to)
+    {
+        return $query->whereBetween('created_at', [$from, $to]);
     }
 }

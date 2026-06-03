@@ -51,6 +51,19 @@ canvas { max-height: 220px; }
     <canvas id="compositionChart"></canvas>
 </div>
 
+{{-- Comparación de progreso --}}
+<div class="chart-card" id="compareSection">
+    <h3><i class="bi bi-arrows-expand"></i> Comparar Períodos</h3>
+    <div class="form-row" style="align-items: flex-end;">
+        <div class="form-group"><label>Desde</label><input type="date" id="compFrom"></div>
+        <div class="form-group"><label>Hasta</label><input type="date" id="compTo"></div>
+        <div class="form-group"><button class="btn-primary" onclick="compareProgress()">Comparar</button></div>
+    </div>
+    <div id="compareResults" style="display:none; margin-top: 20px;">
+        <canvas id="compareChart"></canvas>
+    </div>
+</div>
+
 {{-- Formulario actualización --}}
 <div class="update-form">
     <h3>📋 Registrar Métricas</h3>
@@ -65,6 +78,23 @@ canvas { max-height: 220px; }
         <div class="form-group"><label>Proteína diaria (g)</label><input type="number" id="inp_protein" step="1" placeholder="120"></div>
     </div>
     <button class="btn-primary" onclick="saveMetrics()">Guardar Métricas</button>
+</div>
+
+{{-- Validacion del Entrenador --}}
+@if($user->isTrainer() || $user->isAdmin())
+<div class="update-form" style="margin-top:20px;">
+    <h3>👨‍🏫 Validar Progreso y Comentar</h3>
+    <div class="form-group">
+        <label>Comentario / Retroalimentación</label>
+        <textarea id="trainerComment" rows="3" style="width:100%; padding:10px; background:var(--surface2); color:#fff; border:1px solid var(--border); border-radius:8px;"></textarea>
+    </div>
+    <button class="btn-primary" onclick="validateProgress()">Enviar Validación</button>
+</div>
+@endif
+
+<div id="validationFeedback" style="display:none; margin-bottom: 24px; padding: 15px; background: rgba(34,197,94,.1); border: 1px solid #22c55e; border-radius: 8px;">
+    <h4 style="color:#22c55e; margin:0 0 5px 0;">✅ Validado por tu entrenador</h4>
+    <p id="validationCommentText" style="margin:0; font-size:13px; color:#fff;"></p>
 </div>
 @endsection
 
@@ -116,6 +146,14 @@ async function loadMetrics() {
         ]},
         options: chartOpts
     });
+
+    if (latest.is_validated && latest.trainer_comment) {
+        document.getElementById('validationFeedback').style.display = 'block';
+        document.getElementById('validationCommentText').textContent = latest.trainer_comment;
+    }
+    
+    // Almacenar id más reciente para validacion
+    window.latestProgressId = latest.id;
 }
 
 async function saveMetrics() {
@@ -137,6 +175,48 @@ async function saveMetrics() {
         weightChart?.destroy(); compositionChart?.destroy();
         loadMetrics();
     } else showToast('❌ ' + (d.error || 'Error'));
+}
+
+let compareChartInstance;
+async function compareProgress() {
+    const from = document.getElementById('compFrom').value;
+    const to   = document.getElementById('compTo').value;
+    if(!from || !to) return showToast('⚠️ Selecciona ambas fechas');
+
+    const targetUserId = new URLSearchParams(window.location.search).get('user_id') || '';
+    const query = `?from=${from}&to=${to}` + (targetUserId ? `&user_id=${targetUserId}` : '');
+    
+    const r = await fetch('/api/progress/compare' + query);
+    const d = await r.json();
+    
+    if(d.success && d.data.length > 0) {
+        document.getElementById('compareResults').style.display = 'block';
+        const labels = d.data.map(p => p.created_at.substring(0,10));
+        const weights = d.data.map(p => p.weight);
+        
+        if(compareChartInstance) compareChartInstance.destroy();
+        compareChartInstance = new Chart(document.getElementById('compareChart'), {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'Peso en periodo', data: weights, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true }] },
+            options: { responsive: true }
+        });
+    } else {
+        showToast('⚠️ No hay datos en ese rango');
+    }
+}
+
+async function validateProgress() {
+    if(!window.latestProgressId) return showToast('No hay progreso para validar');
+    const comment = document.getElementById('trainerComment').value;
+    if(!comment) return showToast('⚠️ Escribe un comentario');
+
+    const r = await fetch(`/api/progress/metrics/${window.latestProgressId}/validate`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ trainer_comment: comment })
+    });
+    const d = await r.json();
+    if(d.success) { showToast('✅ Validación enviada'); document.getElementById('trainerComment').value = ''; }
+    else showToast('❌ Error');
 }
 
 function showToast(msg) {

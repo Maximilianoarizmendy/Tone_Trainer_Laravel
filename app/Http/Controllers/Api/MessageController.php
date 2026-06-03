@@ -8,6 +8,13 @@ use Illuminate\Http\JsonResponse;
 use App\Models\Message;
 use App\Models\User;
 
+/**
+ * Controlador API para la Mensajería Interna.
+ * 
+ * Permite a los usuarios y entrenadores enviar, editar, eliminar y leer
+ * mensajes directos entre ellos. Administra hilos de conversación y
+ * conteo de mensajes no leídos.
+ */
 class MessageController extends Controller
 {
     public function conversations(): JsonResponse

@@ -189,9 +189,21 @@
         {{-- ADMIN (rol 2) --}}
         @if(auth()->user()->isAdmin())
             <div class="nav-section">Administración</div>
+            <a href="{{ route('dashboard.index') }}"
+               class="nav-item {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Usuarios
+            </a>
+            <a href="{{ route('dashboard.payments') }}"
+               class="nav-item {{ request()->routeIs('dashboard.payments') ? 'active' : '' }}">
+                <i class="bi bi-credit-card-fill"></i> Pagos y Membresías
+            </a>
+            <a href="{{ route('dashboard.reports') }}"
+               class="nav-item {{ request()->routeIs('dashboard.reports') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-line-fill"></i> Reportes
             </a>
         @endif
 

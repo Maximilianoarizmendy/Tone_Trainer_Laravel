@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Controlador API para gestionar las Fotos de Perfil.
+ * 
+ * Permite a los usuarios cargar, procesar y almacenar de manera segura
+ * imágenes para su avatar, actualizando la base de datos automáticamente.
+ */
 class ProfilePhotoController extends Controller
 {
     public function upload(Request $request): JsonResponse

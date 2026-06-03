@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo NutritionPlan
+ * 
+ * Gestiona el plan alimenticio de un usuario. Define qué debe comer
+ * un cliente específico detallando el día de la semana, momento (comida, cena),
+ * calorías y los macros (proteínas, carbohidratos, grasas).
+ */
 class NutritionPlan extends Model
 {
     protected $table = 'nutrition_plan';

@@ -68,15 +68,20 @@ body {
 
 .box:hover .loginBx, .box.has-errors .loginBx { opacity: 1; transform: translateY(0); }
 .box.state-login:hover, .box.state-login.has-errors { width: 450px; height: 460px; }
-.box.state-register:hover, .box.state-register.has-errors { width: 450px; height: 560px; }
+.box.state-register:hover, .box.state-register.has-errors { width: 520px; height: 600px; }
 
-.loginBx input {
+.loginBx input, .loginBx select {
   width: 100%; padding: 12px 20px; margin-bottom: 12px; border-radius: 30px;
   border: 2px solid var(--accent); background: rgba(255,255,255,0.05);
   color: var(--light); outline: none; transition: 0.3s;
 }
+.loginBx select { appearance: none; cursor: pointer; }
+.loginBx select option { background: var(--box-bg); color: var(--light); }
 .loginBx input::placeholder { color: #999; }
-.loginBx input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
+.loginBx input:focus, .loginBx select:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
+
+.form-row { display: flex; gap: 10px; width: 100%; margin-bottom: 12px; }
+.form-row input, .form-row select { margin-bottom: 0 !important; width: 100%; }
 
 .loginBx input[type="submit"] {
   background: var(--primary); border: none; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px var(--primary); margin-top: 5px; margin-bottom: 5px;
@@ -104,8 +109,10 @@ body {
   body { overflow-y: auto; padding: 30px 0; }
   .box { width: 92vw !important; height: auto !important; padding: 40px 0 30px; flex-direction: column; justify-content: flex-start; gap: 20px; }
   .box.state-login, .box.state-login:hover { min-height: 470px; }
-  .box.state-register, .box.state-register:hover { min-height: 580px; }
+  .box.state-register, .box.state-register:hover { min-height: 750px; }
   .subbox { position: relative; top: 0 !important; width: 85%; margin-bottom: 0; }
+  .form-row { flex-direction: column; gap: 0; margin-bottom: 0; }
+  .form-row input, .form-row select { margin-bottom: 12px !important; }
   .alert-messages { position: relative; top: 0 !important; width: 85%; }
   .loginBx { position: relative; bottom: 0 !important; opacity: 1 !important; transform: none !important; width: 85%; margin-top: auto; }
   .loginBx input { font-size: 14px; padding: 12px 16px; margin-bottom: 12px; }
@@ -152,28 +159,38 @@ body {
     <!-- REGISTER FORM -->
     <form method="POST" class="loginBx" action="{{ route('register.post') }}" id="formRegister" style="display:none; bottom: 20px;">
       @csrf
-      <input type="text" name="name" placeholder="Nombre completo" required value="{{ old('name') }}">
-      <input type="email" name="email" placeholder="Correo electrónico" required value="{{ old('email') }}">
-      <input type="password" name="password" placeholder="Contraseña (mín. 8 caracteres)" required>
-      <input type="password" name="password_confirmation" placeholder="Confirmar contraseña" required>
-      <input type="date" name="birthdate" value="{{ old('birthdate') }}" title="Fecha de nacimiento">
-      <input type="tel" name="phone" placeholder="Teléfono" value="{{ old('phone') }}">
-      <input type="text" name="location" placeholder="Ciudad" value="{{ old('location') }}">
-      <select name="level" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
-        <option value="">Nivel...</option>
-        <option value="Principiante">Principiante</option>
-        <option value="Intermedio">Intermedio</option>
-        <option value="Avanzado">Avanzado</option>
-      </select>
-      <select name="goal" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
-        <option value="">Objetivo...</option>
-        <option value="Pérdida de peso">Pérdida de peso</option>
-        <option value="Ganar músculo">Ganar músculo</option>
-        <option value="Tonificar">Tonificar</option>
-        <option value="Mejorar resistencia">Mejorar resistencia</option>
-      </select>
-      <input type="number" name="weight" placeholder="Peso (kg)" step="0.1" min="0" value="{{ old('weight') }}">
-      <input type="number" name="height" placeholder="Altura (cm)" step="0.1" min="0" value="{{ old('height') }}">
+      <div class="form-row">
+        <input type="text" name="name" placeholder="Nombre completo" required value="{{ old('name') }}">
+        <input type="email" name="email" placeholder="Correo electrónico" required value="{{ old('email') }}">
+      </div>
+      <div class="form-row">
+        <input type="password" name="password" placeholder="Contraseña (mín. 8)" required>
+        <input type="password" name="password_confirmation" placeholder="Confirmar contraseña" required>
+      </div>
+      <div class="form-row">
+        <input type="date" name="birthdate" value="{{ old('birthdate') }}" title="Fecha de nacimiento">
+        <input type="tel" name="phone" placeholder="Teléfono" value="{{ old('phone') }}">
+      </div>
+      <div class="form-row">
+        <input type="text" name="location" placeholder="Ciudad" value="{{ old('location') }}">
+        <select name="level">
+          <option value="">Nivel...</option>
+          <option value="Principiante">Principiante</option>
+          <option value="Intermedio">Intermedio</option>
+          <option value="Avanzado">Avanzado</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <select name="goal" style="flex: 1.5;">
+          <option value="">Objetivo...</option>
+          <option value="Pérdida de peso">Pérdida de peso</option>
+          <option value="Ganar músculo">Ganar músculo</option>
+          <option value="Tonificar">Tonificar</option>
+          <option value="Mejorar resistencia">Mejorar resistencia</option>
+        </select>
+        <input type="number" name="weight" placeholder="Peso (kg)" step="0.1" min="0" value="{{ old('weight') }}" style="flex: 1;">
+        <input type="number" name="height" placeholder="Altura (cm)" step="0.1" min="0" value="{{ old('height') }}" style="flex: 1;">
+      </div>
       <input type="submit" value="CREAR CUENTA">
       <div class="group center">
         <a onclick="switchTab('login')"><i class="fa-solid fa-arrow-left"></i> Volver al login</a>

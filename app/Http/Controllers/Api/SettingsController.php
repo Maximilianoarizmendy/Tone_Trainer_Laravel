@@ -8,6 +8,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Models\UserPreference;
 
+/**
+ * Controlador API para Ajustes y Preferencias de Cuenta.
+ * 
+ * Permite a los usuarios personalizar notificaciones,
+ * modificar su contraseña de forma segura y establecer sus
+ * objetivos y disponibilidad para los entrenamientos.
+ */
 class SettingsController extends Controller
 {
     public function show(): JsonResponse

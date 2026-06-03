@@ -4,6 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Modelo UserPreference
+ * 
+ * Guarda la configuración de la cuenta y preferencias de sistema
+ * de un usuario, como por ejemplo la activación de notificaciones,
+ * nivel de entrenamiento, frecuencia semanal y horarios preferidos.
+ */
 class UserPreference extends Model
 {
     protected $table = 'user_preferences';

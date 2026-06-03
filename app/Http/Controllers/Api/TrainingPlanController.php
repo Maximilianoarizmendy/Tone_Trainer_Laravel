@@ -8,6 +8,13 @@ use Illuminate\Http\JsonResponse;
 use App\Models\TrainingPlan;
 use App\Models\User;
 
+/**
+ * Controlador API para Planes de Entrenamiento (Rutinas).
+ * 
+ * Permite a los entrenadores asignar ejercicios específicos, series
+ * y repeticiones a los usuarios. Integra alertas automáticas al
+ * usuario cuando la rutina sufre modificaciones.
+ */
 class TrainingPlanController extends Controller
 {
     /** GET /api/training-plan  — lista ejercicios del usuario (o de otro si es staff) */
@@ -43,6 +50,15 @@ class TrainingPlanController extends Controller
         $data['assigned_by'] = $me->id;
 
         $exercise = TrainingPlan::create($data);
+
+        // Notificar al usuario (Req 15)
+        $user = User::find($request->user_id);
+        if ($user) {
+            $user->notify(new \App\Notifications\AppNotification(
+                'Rutina Actualizada',
+                'Tu entrenador ha agregado o modificado ejercicios en tu plan de entrenamiento.'
+            ));
+        }
 
         return response()->json(['success' => true, 'message' => 'Ejercicio añadido.', 'data' => $exercise]);
     }

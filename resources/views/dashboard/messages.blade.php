@@ -75,25 +75,22 @@
 <script>
 const myId = {{ auth()->id() }};
 const roleNames = {1:'Usuario',2:'Admin',3:'Nutricionista',4:'Entrenador'};
-let contacts = [], currentContact = null, pollInterval = null;
+let contacts = @json($contacts);
+let currentContact = null, pollInterval = null;
 
-async function loadContacts() {
-    const r = await fetch('/api/messages/conversations');
-    const d = await r.json();
-    if (d.success) { contacts = d.data; renderContacts(contacts); }
-}
 
 function renderContacts(list) {
     const ul = document.getElementById('contactsList');
-    if (!list.length) { ul.innerHTML = '<p style="padding:16px;color:var(--muted);font-size:13px;">No hay contactos.</p>'; return; }
+    if (!list || !list.length) { 
+        ul.innerHTML = '<p style="padding:16px;color:var(--muted);font-size:13px;">No hay contactos asignados.</p>'; 
+        return; 
+    }
     ul.innerHTML = list.map(c => `
         <div class="contact-item ${currentContact?.id==c.id?'active':''}" onclick="openChat(${c.id})">
             <div class="contact-avatar">${c.name.charAt(0).toUpperCase()}</div>
             <div style="flex:1;overflow:hidden;">
                 <div class="contact-name">${c.name}</div>
-                <div class="contact-last">${c.last_message||'(sin mensajes)'}</div>
             </div>
-            ${c.unread_count>0?`<span class="contact-badge">${c.unread_count}</span>`:''}
         </div>`).join('');
 }
 
@@ -116,21 +113,19 @@ async function openChat(contactId) {
 }
 
 async function loadMessages(contactId) {
-    const r = await fetch(`/api/messages/thread?with_user_id=${contactId}`);
+    const r = await fetch(`/api/messages/${contactId}`);
     const d = await r.json();
     if (!d.success) return;
     const container = document.getElementById('chatMessages');
     const atBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
-    container.innerHTML = d.data.map(m => {
+    container.innerHTML = d.messages.map(m => {
         const isMe = m.sender_id == myId;
         return `<div class="msg-bubble ${isMe?'msg-me':'msg-other'}">
-            ${!isMe?`<div class="msg-sender">${m.sender?.name||''}</div>`:''}
             <div>${escapeHtml(m.message)}</div>
             <div class="msg-time">${fmtTime(m.created_at)}</div>
         </div>`;
     }).join('');
     if (atBottom) container.scrollTop = container.scrollHeight;
-    loadContacts();
 }
 
 async function sendMessage() {
@@ -138,16 +133,28 @@ async function sendMessage() {
     const text  = input.value.trim();
     if (!text || !currentContact) return;
     input.value = '';
-    await fetch('/api/messages/send', {
-        method:'POST', headers:{'Content-Type':'application/json'},
+    
+    // Mostramos mensaje temporalmente para sensación de rapidez
+    const container = document.getElementById('chatMessages');
+    container.innerHTML += `<div class="msg-bubble msg-me" style="opacity:0.7"><div>${escapeHtml(text)}</div><div class="msg-time">...</div></div>`;
+    container.scrollTop = container.scrollHeight;
+
+    await fetch('/api/messages', {
+        method:'POST', 
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
         body: JSON.stringify({receiver_id: currentContact.id, message: text})
     });
+    
     loadMessages(currentContact.id);
 }
 
 function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 function fmtTime(ts)  { const d=new Date(ts); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 
-loadContacts();
+// Render inicial
+renderContacts(contacts);
 </script>
 @endsection

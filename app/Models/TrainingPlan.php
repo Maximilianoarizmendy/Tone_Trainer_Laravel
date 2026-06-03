@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TrainingPlan extends Model
 {
-    protected $table = 'training_plan';
+    protected $table = 'training_plans';
 
     protected $fillable = [
         'user_id', 'assigned_by', 'day_group', 'exercise',
-        'series', 'reps', 'description', 'status',
+        'series', 'reps', 'duration', 'description', 'status',
     ];
 
     protected $casts = [

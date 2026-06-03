@@ -329,7 +329,10 @@ function showModal(user = null) {
     document.getElementById('goal').value = user?.goal || '';
     document.getElementById('weight').value = user?.weight || '';
     document.getElementById('height').value = user?.height || '';
-    document.getElementById('role').value = user?.role || 1;
+    const roleElem = document.getElementById('role');
+    if (roleElem) {
+        roleElem.value = user?.role || 1;
+    }
     document.getElementById('userModal').style.display = 'flex';
 }
 

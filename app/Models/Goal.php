@@ -13,10 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Goal extends Model
 {
-    public $timestamps = false;
-
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = null;
+    // Timestamps habilitados por defecto
 
     protected $fillable = [
         'user_id', 'title', 'description', 'category',

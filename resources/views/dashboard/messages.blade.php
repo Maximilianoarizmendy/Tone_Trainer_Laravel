@@ -17,7 +17,7 @@
 .contact-name { font-size: 13px; font-weight: 600; color: #fff; }
 .contact-last { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; margin-top: 2px; }
 .contact-badge { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-.chat-panel { display: flex; flex-direction: column; }
+.chat-panel { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
 .chat-header-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--surface3); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--primary); }
 .chat-header-name { font-size: 14px; font-weight: 600; color: #fff; }

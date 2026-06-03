@@ -87,10 +87,10 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         if ($me->role !== User::ROLE_ADMIN && $user->id !== $me->id) {
-            if ($me->role === User::ROLE_TRAINER && $user->trainer_id !== $me->id) {
+            if ($me->role === User::ROLE_TRAINER && $user->trainer_id !== $me->id && $user->role !== User::ROLE_USER) {
                 return response()->json(['success' => false, 'message' => 'No es tu usuario'], 403);
             }
-            if ($me->role === User::ROLE_NUTRITIONIST && $user->nutritionist_id !== $me->id) {
+            if ($me->role === User::ROLE_NUTRITIONIST && $user->nutritionist_id !== $me->id && $user->role !== User::ROLE_USER) {
                 return response()->json(['success' => false, 'message' => 'No es tu usuario'], 403);
             }
         }

@@ -67,7 +67,11 @@
     @forelse($users as $u)
     <div class="user-card">
         <div class="user-header">
-            <div class="user-avatar">{{ strtoupper(substr($u->name, 0, 1)) }}</div>
+            @if($u->profile_photo)
+                <img src="{{ asset('storage/' . $u->profile_photo) }}" class="user-avatar-img" alt="Foto de {{ $u->name }}">
+            @else
+                <div class="user-avatar">{{ strtoupper(substr($u->name, 0, 1)) }}</div>
+            @endif
             <div class="user-info">
                 <span class="user-name">{{ $u->name }}</span>
                 <span class="user-email">{{ $u->email }}</span>
@@ -276,6 +280,7 @@
 .user-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
 .user-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 16px; flex-shrink: 0; }
+.user-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
 .user-info { flex: 1; min-width: 0; }
 .user-name { display: block; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-email { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

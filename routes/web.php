@@ -47,7 +47,6 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     // Admin (rol 2)
     Route::middleware('role:2')->group(function () {
         Route::get('/admin',    [DashboardController::class, 'admin'])->name('admin');
-        Route::get('/payments', [DashboardController::class, 'payments'])->name('payments');
         Route::get('/reports',  [DashboardController::class, 'reports'])->name('reports');
 
         Route::post('/admin/trainers',        [DashboardController::class, 'storeTrainer'])->name('admin.trainers.store');
@@ -97,6 +96,7 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('/perfil',         [DashboardController::class, 'profile'])->name('profile');
     Route::get('/configuracion',  [DashboardController::class, 'settings'])->name('settings');
     Route::get('/usuarios',       [DashboardController::class, 'users'])->name('users')->middleware('role:2,3,4');
+    Route::get('/payments',       [DashboardController::class, 'payments'])->name('payments')->middleware('role:1,2');
     Route::post('/editar-perfil', [DashboardController::class, 'updateProfile'])->name('profile.update');
 });
 

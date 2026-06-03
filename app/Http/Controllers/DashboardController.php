@@ -83,8 +83,14 @@ class DashboardController extends Controller
      */
     public function payments()
     {
-        $payments = Payment::orderBy('created_at', 'desc')
-            ->paginate(15);
+        $user = auth()->user();
+        $query = Payment::orderBy('created_at', 'desc');
+
+        if ($user->role != User::ROLE_ADMIN) {
+            $query->where('user_id', $user->id);
+        }
+
+        $payments = $query->paginate(15);
         return view('dashboard.payments', compact('payments'));
     }
 

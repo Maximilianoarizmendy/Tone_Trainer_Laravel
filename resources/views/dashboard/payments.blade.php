@@ -123,6 +123,7 @@
 </div>
 
 {{-- Tarjetas resumen --}}
+@if(auth()->user()->isAdmin())
 @php
     $totalPagos      = $payments->total();
     $totalMonto      = \App\Models\Payment::sum('amount') + (\App\Models\Payment::sum('amount_cents') / 100);
@@ -159,6 +160,25 @@
         </div>
     </div>
 </div>
+@else
+{{-- Tarjeta de membresía actual para usuario normal --}}
+<div class="payments-stats" style="grid-template-columns: 1fr;">
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-shield-check"></i></div>
+        <div>
+            <div class="stat-value">
+                @if(auth()->user()->membership)
+                    {{ auth()->user()->membership->name }}
+                @else
+                    Sin Membresía Activa
+                @endif
+            </div>
+            <div class="stat-label">Membresía Actual</div>
+        </div>
+    </div>
+</div>
+@endif
+
 
 {{-- Tabla de historial --}}
 @if($payments->count())

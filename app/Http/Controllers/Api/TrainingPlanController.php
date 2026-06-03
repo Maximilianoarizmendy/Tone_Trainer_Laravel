@@ -43,7 +43,8 @@ class TrainingPlanController extends Controller
             'day_group'   => 'required|string|max:50',
             'exercise'    => 'required|string|max:100',
             'series'      => 'required|integer|min:1',
-            'reps'        => 'required|integer|min:1',
+            'reps'        => 'nullable|integer|min:1',
+            'duration'    => 'nullable|string|max:50',
             'description' => 'nullable|string',
         ]);
 
@@ -61,6 +62,52 @@ class TrainingPlanController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Ejercicio añadido.', 'data' => $exercise]);
+    }
+
+    /** GET /api/exercises-library — busca ejercicios en la biblioteca local JSON */
+    public function library(Request $request): JsonResponse
+    {
+        $path = storage_path('app/exercises.json');
+        if (!file_exists($path)) {
+            return response()->json(['success' => false, 'message' => 'La biblioteca de ejercicios no está disponible.'], 404);
+        }
+
+        $search = strtolower($request->query('search', ''));
+        $category = strtolower($request->query('category', ''));
+
+        $json = file_get_contents($path);
+        $exercises = json_decode($json, true);
+
+        if (!is_array($exercises)) {
+            return response()->json(['success' => false, 'message' => 'Formato de biblioteca no válido.'], 500);
+        }
+
+        if ($search !== '') {
+            $exercises = array_filter($exercises, function ($ex) use ($search) {
+                $nameMatch = isset($ex['name']) && stripos($ex['name'], $search) !== false;
+                $muscleMatch = false;
+                if (isset($ex['primaryMuscles']) && is_array($ex['primaryMuscles'])) {
+                    foreach ($ex['primaryMuscles'] as $m) {
+                        if (stripos($m, $search) !== false) {
+                            $muscleMatch = true;
+                            break;
+                        }
+                    }
+                }
+                return $nameMatch || $muscleMatch;
+            });
+        }
+
+        if ($category !== '') {
+            $exercises = array_filter($exercises, function ($ex) use ($category) {
+                return isset($ex['category']) && strtolower($ex['category']) === $category;
+            });
+        }
+
+        // Limitar resultados a 50 para rapidez
+        $exercises = array_slice(array_values($exercises), 0, 50);
+
+        return response()->json(['success' => true, 'data' => $exercises]);
     }
 
     /** DELETE /api/training-plan/{id}  — elimina ejercicio (staff) */

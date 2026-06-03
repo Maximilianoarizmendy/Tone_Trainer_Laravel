@@ -149,9 +149,10 @@
                 <option value="Pecho"><option value="Espalda"><option value="Pierna"><option value="Brazos">
             </datalist>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="position: relative;">
             <label>Ejercicio</label>
-            <input type="text" id="newExercise" placeholder="Nombre del ejercicio">
+            <input type="text" id="newExercise" placeholder="Nombre del ejercicio" autocomplete="off" oninput="searchLibrary(this.value)" onfocus="searchLibrary(this.value)">
+            <div id="exerciseSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #222; border: 1px solid #444; border-radius: 8px; z-index: 1000; max-height: 220px; overflow-y: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.6); margin-top: 4px;"></div>
         </div>
     </div>
     <div class="form-row">
@@ -160,8 +161,12 @@
             <input type="number" id="newSeries" placeholder="Ej: 3" min="1">
         </div>
         <div class="form-group">
-            <label>Repeticiones</label>
+            <label>Repeticiones (opcional)</label>
             <input type="number" id="newReps" placeholder="Ej: 12" min="1">
+        </div>
+        <div class="form-group">
+            <label>Duración / Tiempo (opcional)</label>
+            <input type="text" id="newDuration" placeholder="Ej: 60s, 2 min">
         </div>
     </div>
     <div class="form-group">
@@ -260,12 +265,22 @@ function renderCards(exercises) {
             item.className = `exercise-item${done ? ' completed' : ''}`;
             item.id = `ex-${ex.id}`;
             item.title = ex.description || '';
+
+            let metaText = `${ex.series} series`;
+            if (ex.reps && ex.duration) {
+                metaText += ` × ${ex.reps} reps (${ex.duration})`;
+            } else if (ex.reps) {
+                metaText += ` × ${ex.reps} reps`;
+            } else if (ex.duration) {
+                metaText += ` × ${ex.duration}`;
+            }
+
             item.innerHTML = `
                 ${!isTrainer ? `<input type="checkbox" class="exercise-checkbox" ${done ? 'checked' : ''}
                     data-id="${ex.id}" onchange="toggleCompletion(this)">` : ''}
                 <div class="exercise-content">
                     <div class="exercise-name">${ex.exercise}</div>
-                    <div class="exercise-meta">${ex.series} series × ${ex.reps} reps
+                    <div class="exercise-meta">${metaText}
                         ${ex.description ? ' — ' + ex.description : ''}</div>
                 </div>
                 ${isTrainer ? `<button class="btn-delete-ex" title="Eliminar" onclick="deleteExercise(${ex.id})">🗑️</button>` : ''}
@@ -311,29 +326,40 @@ async function toggleCompletion(cb) {
 
 // ── Agregar ejercicio ──────────────────────────────────────
 async function addExercise() {
+    const repsVal = document.getElementById('newReps').value;
     const body = {
         user_id:     targetUserId,
         day_group:   document.getElementById('newDayGroup').value.trim(),
         exercise:    document.getElementById('newExercise').value.trim(),
         series:      parseInt(document.getElementById('newSeries').value),
-        reps:        parseInt(document.getElementById('newReps').value),
+        reps:        repsVal ? parseInt(repsVal) : null,
+        duration:    document.getElementById('newDuration').value.trim(),
         description: document.getElementById('newDesc').value.trim(),
     };
 
-    if (!body.day_group || !body.exercise || !body.series || !body.reps) {
-        showToast('⚠️ Completa los campos obligatorios'); return;
+    if (!body.day_group || !body.exercise || !body.series) {
+        showToast('⚠️ Completa los campos obligatorios (Día, Ejercicio, Series)'); return;
+    }
+
+    if (!body.reps && !body.duration) {
+        showToast('⚠️ Debes ingresar Repeticiones o Duración/Tiempo'); return;
     }
 
     const r = await fetch('/api/training-plan', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
         body: JSON.stringify(body)
     });
     const d = await r.json();
     if (d.success) {
         showToast('✅ Ejercicio añadido');
-        ['newDayGroup','newExercise','newSeries','newReps','newDesc'].forEach(id => {
-            document.getElementById(id).value = '';
+        ['newDayGroup','newExercise','newSeries','newReps','newDuration','newDesc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
         });
         loadTraining();
     } else {
@@ -374,6 +400,66 @@ function showToast(msg) {
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 2500);
 }
+
+// ── Autocomplete biblioteca de ejercicios ──────────────────
+let libraryTimeout = null;
+async function searchLibrary(val) {
+    const suggContainer = document.getElementById('exerciseSuggestions');
+    if (!val || val.length < 2) {
+        suggContainer.innerHTML = '';
+        suggContainer.style.display = 'none';
+        return;
+    }
+
+    clearTimeout(libraryTimeout);
+    libraryTimeout = setTimeout(async () => {
+        try {
+            const r = await fetch(`/api/exercises-library?search=${encodeURIComponent(val)}`);
+            const d = await r.json();
+            if (d.success && d.data.length > 0) {
+                suggContainer.innerHTML = '';
+                d.data.forEach(ex => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'padding: 10px 14px; border-bottom: 1px solid #333; cursor: pointer; transition: background .15s; font-size: 13px; color: #fff;';
+                    div.innerHTML = `<strong>${ex.name}</strong> <span style="font-size:11px; color:var(--muted); float:right;">${ex.primaryMuscles ? ex.primaryMuscles.join(', ') : ''}</span>`;
+                    
+                    div.onmouseover = () => div.style.background = 'var(--primary)';
+                    div.onmouseout = () => div.style.background = 'transparent';
+                    
+                    div.onclick = () => {
+                        document.getElementById('newExercise').value = ex.name;
+                        
+                        let tip = '';
+                        if (ex.primaryMuscles && ex.primaryMuscles.length > 0) {
+                            tip += `Músculo: ${ex.primaryMuscles.join(', ')}. `;
+                        }
+                        if (ex.instructions && ex.instructions.length > 0) {
+                            tip += ex.instructions[0];
+                        }
+                        document.getElementById('newDesc').value = tip.substring(0, 190);
+                        
+                        suggContainer.style.display = 'none';
+                    };
+                    suggContainer.appendChild(div);
+                });
+                suggContainer.style.display = 'block';
+            } else {
+                suggContainer.innerHTML = '<div style="padding: 10px 14px; color: var(--muted); font-size: 13px;">No se encontraron ejercicios.</div>';
+                suggContainer.style.display = 'block';
+            }
+        } catch (e) {
+            console.error('Error fetching exercises library', e);
+        }
+    }, 200);
+}
+
+// Cerrar sugerencias al hacer clic fuera
+document.addEventListener('click', function(e) {
+    const suggContainer = document.getElementById('exerciseSuggestions');
+    if (suggContainer && e.target.id !== 'newExercise') {
+        suggContainer.style.display = 'none';
+    }
+});
 
 loadTraining();
 </script>

@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/training-plan',          [TrainingPlanController::class, 'index']);
     Route::post('/training-plan',         [TrainingPlanController::class, 'store']);
     Route::delete('/training-plan/{id}',  [TrainingPlanController::class, 'destroy']);
+    Route::get('/exercises-library',      [TrainingPlanController::class, 'library']);
 
     // === PROFILE PHOTO ===
     Route::post('/profile/photo',         [ProfilePhotoController::class, 'upload']);

@@ -184,6 +184,10 @@
                class="nav-item {{ request()->routeIs('dashboard.goals') ? 'active' : '' }}">
                 <i class="bi bi-trophy-fill"></i> Metas
             </a>
+            <a href="{{ route('dashboard.payments') }}"
+               class="nav-item {{ request()->routeIs('dashboard.payments') ? 'active' : '' }}">
+                <i class="bi bi-credit-card-fill"></i> Pagos y Membresías
+            </a>
         @endif
 
         {{-- ADMIN (rol 2) --}}

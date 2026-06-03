@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('user_id');
             $table->integer('training_plan_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('training_plan_id')->references('id')->on('training_plan')->onDelete('cascade');
+            $table->foreign('training_plan_id')->references('id')->on('training_plans')->onDelete('cascade');
             $table->date('date');
             $table->enum('status', ['present', 'absent']);
             $table->timestamps();

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class NutritionPlan extends Model
 {
-    protected $table = 'nutrition_plan';
+    protected $table = 'nutrition_plans';
 
     protected $fillable = [
         'user_id', 'day_of_week', 'meal_type', 'food_name',

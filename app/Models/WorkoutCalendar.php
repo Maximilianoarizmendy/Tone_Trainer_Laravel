@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class WorkoutCalendar extends Model
 {
-    protected $table = 'workout_calendar';
+    protected $table = 'workout_calendars';
 
     protected $fillable = [
         'user_id', 'workout_date', 'workout_type', 'title',

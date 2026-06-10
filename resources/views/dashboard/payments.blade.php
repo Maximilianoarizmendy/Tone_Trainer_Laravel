@@ -1,53 +1,158 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Pagos y Membresías')
-
-@section('page-title', 'Pagos y Membresías')
+@section('page-title', '💳 Pagos y Membresías')
 
 @section('styles')
 <style>
-    /* ── Encabezado de pagos ── */
-    .payments-header {
+    /* ── Header ── */
+    .pay-header {
         display: flex; align-items: center; justify-content: space-between;
-        flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+        flex-wrap: wrap; gap: 16px; margin-bottom: 32px;
     }
-    .payments-header h2 { color: var(--primary); font-size: 22px; font-weight: 700; margin: 0; }
+    .pay-header h2 { color: #fff; font-size: 22px; font-weight: 700; margin: 0; }
+    .pay-header p  { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
 
-    /* ── Tarjetas resumen ── */
+    /* ── Admin stats ── */
     .payments-stats {
         display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px; margin-bottom: 28px;
+        gap: 16px; margin-bottom: 32px;
     }
     .stat-card {
         background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
         padding: 20px; display: flex; align-items: center; gap: 14px;
         box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
     }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-    .stat-icon {
-        width: 48px; height: 48px; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center; font-size: 22px;
-    }
-    .stat-icon.green  { background: rgba(34,197,94,.12); color: #22c55e; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .stat-icon.green  { background: rgba(34,197,94,.12);  color: #22c55e; }
     .stat-icon.blue   { background: rgba(59,130,246,.12); color: #3b82f6; }
     .stat-icon.orange { background: rgba(255,69,0,.12);   color: var(--primary); }
     .stat-icon.purple { background: rgba(168,85,247,.12); color: #a855f7; }
     .stat-value { font-size: 24px; font-weight: 700; color: #fff; }
     .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-    /* ── Botón pagar ── */
-    .btn-pay {
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 12px 24px; background: linear-gradient(135deg, var(--primary), #ff6a33);
-        color: #fff; border: none; border-radius: var(--radius);
-        font-size: 14px; font-weight: 600; cursor: pointer;
-        transition: transform .15s, box-shadow .15s; font-family: 'Poppins', sans-serif;
+    /* ── Membresía activa banner ── */
+    .membership-active-banner {
+        background: linear-gradient(135deg, rgba(255,69,0,.12), rgba(255,106,51,.06));
+        border: 1px solid rgba(255,69,0,.3); border-radius: var(--radius);
+        padding: 20px 24px; margin-bottom: 32px;
+        display: flex; align-items: center; gap: 16px;
     }
-    .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,69,0,.35); }
-    .btn-pay:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-    .btn-pay i { font-size: 16px; }
+    .membership-active-banner .icon { font-size: 32px; }
+    .membership-active-banner .info h3 { color: #fff; font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+    .membership-active-banner .info p  { color: var(--muted); font-size: 13px; margin: 0; }
+    .badge-active { background: rgba(34,197,94,.15); color: #22c55e; border: 1px solid rgba(34,197,94,.3); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: auto; white-space: nowrap; }
+    .badge-none   { background: rgba(239,68,68,.12);  color: #ef4444;  border: 1px solid rgba(239,68,68,.3);  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: auto; white-space: nowrap; }
 
-    /* ── Tabla ── */
+    /* ── Título de sección ── */
+    .section-title {
+        font-size: 18px; font-weight: 700; color: #fff;
+        margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+
+    /* ── Tarjetas de membresía ── */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .plan-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px 24px;
+        display: flex; flex-direction: column;
+        position: relative; overflow: hidden;
+        transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .plan-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    }
+    .plan-card.featured {
+        border-color: rgba(255,69,0,.5);
+        box-shadow: 0 0 0 1px rgba(255,69,0,.2), var(--shadow);
+    }
+    .plan-card.featured::before {
+        content: '★ MÁS POPULAR';
+        position: absolute; top: 0; right: 0;
+        background: var(--primary); color: #fff;
+        font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        padding: 6px 16px; border-bottom-left-radius: 12px;
+    }
+    .plan-card.ultimate {
+        background: linear-gradient(145deg, #1e1a2e, #1a1a1a);
+        border-color: rgba(168,85,247,.4);
+    }
+    .plan-card.ultimate::before {
+        content: '👑 PREMIUM';
+        position: absolute; top: 0; right: 0;
+        background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff;
+        font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        padding: 6px 16px; border-bottom-left-radius: 12px;
+    }
+    .plan-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        margin-bottom: 16px; align-self: flex-start;
+    }
+    .plan-badge.promo    { background: rgba(34,197,94,.12);  color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
+    .plan-badge.standard { background: rgba(255,69,0,.12);   color: var(--primary); border: 1px solid rgba(255,69,0,.25); }
+    .plan-badge.ultimate { background: rgba(168,85,247,.12); color: #a855f7; border: 1px solid rgba(168,85,247,.25); }
+
+    .plan-name  { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .plan-desc  { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; min-height: 40px; }
+    .plan-price {
+        display: flex; align-items: baseline; gap: 6px;
+        margin-bottom: 24px;
+    }
+    .plan-price .currency { font-size: 16px; color: var(--muted); font-weight: 600; }
+    .plan-price .amount   { font-size: 40px; font-weight: 800; color: #fff; line-height: 1; }
+    .plan-price .period   { font-size: 12px; color: var(--muted); }
+    .plan-features { list-style: none; padding: 0; margin: 0 0 28px; flex: 1; }
+    .plan-features li {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 13px; color: var(--muted); padding: 7px 0;
+        border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li i { font-size: 14px; flex-shrink: 0; }
+    .feat-ok   { color: #22c55e; }
+    .feat-no   { color: #444; text-decoration: line-through; }
+    .feat-no i { color: #333; }
+
+    .btn-plan {
+        width: 100%; padding: 14px;
+        border: none; border-radius: 10px;
+        font-size: 14px; font-weight: 700; cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: transform .15s, box-shadow .15s, opacity .15s;
+    }
+    .btn-plan:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn-plan:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .btn-plan.promo    { background: rgba(34,197,94,.15);  color: #22c55e;  border: 1px solid rgba(34,197,94,.3); }
+    .btn-plan.promo:hover:not(:disabled)    { background: rgba(34,197,94,.25); box-shadow: 0 6px 20px rgba(34,197,94,.2); }
+    .btn-plan.standard { background: linear-gradient(135deg, var(--primary), #ff6a33); color: #fff; box-shadow: 0 4px 16px rgba(255,69,0,.25); }
+    .btn-plan.standard:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(255,69,0,.4); }
+    .btn-plan.ultimate { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; box-shadow: 0 4px 16px rgba(168,85,247,.25); }
+    .btn-plan.ultimate:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(168,85,247,.4); }
+    .btn-plan.current-plan { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); cursor: default; }
+
+    /* ── Flash messages ── */
+    .payment-flash {
+        padding: 14px 20px; border-radius: var(--radius); margin-bottom: 24px;
+        display: flex; align-items: center; gap: 10px; font-size: 14px;
+        animation: slideIn .3s ease;
+    }
+    .payment-flash.success   { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: #86efac; }
+    .payment-flash.cancelled { background: rgba(250,204,21,.1); border: 1px solid rgba(250,204,21,.25); color: #fde68a; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── Tabla historial ── */
     .payments-table-wrap {
         background: var(--surface); border: 1px solid var(--border);
         border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
@@ -61,42 +166,20 @@
     .payments-table td { padding: 14px 16px; font-size: 13px; border-top: 1px solid var(--border); }
     .payments-table tbody tr { transition: background .15s; }
     .payments-table tbody tr:hover { background: var(--surface2); }
-
-    /* Badges de estado */
-    .badge-status {
-        display: inline-block; padding: 4px 10px; border-radius: 20px;
-        font-size: 11px; font-weight: 600; text-transform: capitalize;
-    }
-    .badge-paid      { background: rgba(34,197,94,.12);  color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
-    .badge-completed { background: rgba(34,197,94,.12);  color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
-    .badge-pending   { background: rgba(250,204,21,.12); color: #facc15; border: 1px solid rgba(250,204,21,.25); }
-    .badge-failed    { background: rgba(239,68,68,.12);  color: #ef4444; border: 1px solid rgba(239,68,68,.25); }
-    .badge-cancelled { background: rgba(156,163,175,.12);color: #9ca3af; border: 1px solid rgba(156,163,175,.25); }
-
-    /* Paginación */
+    .badge-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-paid      { background: rgba(34,197,94,.12);   color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
+    .badge-completed { background: rgba(34,197,94,.12);   color: #22c55e; border: 1px solid rgba(34,197,94,.25); }
+    .badge-pending   { background: rgba(250,204,21,.12);  color: #facc15; border: 1px solid rgba(250,204,21,.25); }
+    .badge-failed    { background: rgba(239,68,68,.12);   color: #ef4444; border: 1px solid rgba(239,68,68,.25); }
+    .badge-cancelled { background: rgba(156,163,175,.12); color: #9ca3af; border: 1px solid rgba(156,163,175,.25); }
     .pagination-wrap { padding: 16px; display: flex; justify-content: center; }
-
-    /* ── Estado vacío ── */
-    .empty-state {
-        text-align: center; padding: 60px 20px; color: var(--muted);
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
     .empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--border); display: block; }
     .empty-state p { font-size: 15px; }
 
-    /* ── Flash de status via query string ── */
-    .payment-flash {
-        padding: 14px 20px; border-radius: var(--radius); margin-bottom: 20px;
-        display: flex; align-items: center; gap: 10px; font-size: 14px;
-        animation: slideIn .3s ease;
-    }
-    .payment-flash.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: #86efac; }
-    .payment-flash.cancelled { background: rgba(250,204,21,.1); border: 1px solid rgba(250,204,21,.25); color: #fde68a; }
-    @keyframes slideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-
-    /* Responsive */
     @media (max-width: 768px) {
+        .plans-grid { grid-template-columns: 1fr; }
         .payments-table-wrap { overflow-x: auto; }
-        .payments-header { flex-direction: column; align-items: flex-start; }
     }
 </style>
 @endsection
@@ -106,24 +189,26 @@
 {{-- Flash por query string --}}
 @if(request('status') === 'success')
     <div class="payment-flash success">
-        <i class="bi bi-check-circle-fill"></i> ¡Pago completado exitosamente! Gracias por tu compra.
+        <i class="bi bi-check-circle-fill"></i> ¡Pago completado exitosamente! Tu membresía ya está activa.
     </div>
 @elseif(request('status') === 'cancelled')
     <div class="payment-flash cancelled">
-        <i class="bi bi-exclamation-triangle-fill"></i> El pago fue cancelado. Puedes intentarlo de nuevo.
+        <i class="bi bi-exclamation-triangle-fill"></i> El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.
     </div>
 @endif
 
-{{-- Encabezado --}}
-<div class="payments-header">
-    <h2><i class="bi bi-credit-card-2-front-fill"></i> Pagos y Membresías</h2>
-    <button class="btn-pay" id="btn-stripe-pay">
-        <i class="bi bi-credit-card"></i> Realizar nuevo pago
-    </button>
+{{-- ═══════════════════════════════════════════════════════ --}}
+{{-- VISTA ADMINISTRADOR                                       --}}
+{{-- ═══════════════════════════════════════════════════════ --}}
+@if(auth()->user()->isAdmin())
+
+<div class="pay-header">
+    <div>
+        <h2><i class="bi bi-bar-chart-line-fill"></i> Resumen de Ingresos</h2>
+        <p>Panel de control de todos los pagos registrados en la plataforma.</p>
+    </div>
 </div>
 
-{{-- Tarjetas resumen --}}
-@if(auth()->user()->isAdmin())
 @php
     $totalPagos      = $payments->total();
     $totalMonto      = \App\Models\Payment::sum('amount') + (\App\Models\Payment::sum('amount_cents') / 100);
@@ -133,61 +218,166 @@
 <div class="payments-stats">
     <div class="stat-card">
         <div class="stat-icon blue"><i class="bi bi-receipt-cutoff"></i></div>
-        <div>
-            <div class="stat-value">{{ $totalPagos }}</div>
-            <div class="stat-label">Total pagos</div>
-        </div>
+        <div><div class="stat-value">{{ $totalPagos }}</div><div class="stat-label">Total pagos</div></div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon green"><i class="bi bi-currency-dollar"></i></div>
-        <div>
-            <div class="stat-value">${{ number_format($totalMonto, 2) }}</div>
-            <div class="stat-label">Total recaudado</div>
-        </div>
+        <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+        <div><div class="stat-value">${{ number_format($totalMonto, 0) }}</div><div class="stat-label">Total recaudado (COP)</div></div>
     </div>
     <div class="stat-card">
         <div class="stat-icon orange"><i class="bi bi-check2-circle"></i></div>
-        <div>
-            <div class="stat-value">{{ $pagosExitosos }}</div>
-            <div class="stat-label">Pagos exitosos</div>
-        </div>
+        <div><div class="stat-value">{{ $pagosExitosos }}</div><div class="stat-label">Pagos exitosos</div></div>
     </div>
     <div class="stat-card">
         <div class="stat-icon purple"><i class="bi bi-hourglass-split"></i></div>
-        <div>
-            <div class="stat-value">{{ $pagosPendientes }}</div>
-            <div class="stat-label">Pendientes</div>
-        </div>
+        <div><div class="stat-value">{{ $pagosPendientes }}</div><div class="stat-label">Pendientes</div></div>
     </div>
 </div>
+
+{{-- ═══════════════════════════════════════════════════════ --}}
+{{-- VISTA USUARIO: PLANES DE MEMBRESÍA                       --}}
+{{-- ═══════════════════════════════════════════════════════ --}}
 @else
-{{-- Tarjeta de membresía actual para usuario normal --}}
-<div class="payments-stats" style="grid-template-columns: 1fr;">
-    <div class="stat-card">
-        <div class="stat-icon green"><i class="bi bi-shield-check"></i></div>
-        <div>
-            <div class="stat-value">
-                @if(auth()->user()->membership)
-                    {{ auth()->user()->membership->name }}
-                @else
-                    Sin Membresía Activa
-                @endif
-            </div>
-            <div class="stat-label">Membresía Actual</div>
-        </div>
+
+<div class="pay-header">
+    <div>
+        <h2><i class="bi bi-stars"></i> Planes de Membresía</h2>
+        <p>Elige el plan que mejor se adapte a tus objetivos. ¡Transforma tu cuerpo hoy!</p>
     </div>
 </div>
-@endif
 
+{{-- Membresía activa del usuario --}}
+@php $activeMembership = auth()->user()->membership; @endphp
+<div class="membership-active-banner">
+    <div class="icon">{{ $activeMembership ? '🏆' : '⚡' }}</div>
+    <div class="info">
+        <h3>{{ $activeMembership ? $activeMembership->name : 'Sin membresía activa' }}</h3>
+        <p>
+            @if($activeMembership)
+                Activa desde {{ auth()->user()->membership_start ? \Carbon\Carbon::parse(auth()->user()->membership_start)->format('d/m/Y') : 'N/A' }}.
+                Duración: {{ $activeMembership->duration_days }} días.
+            @else
+                Selecciona uno de los planes a continuación para comenzar tu transformación.
+            @endif
+        </p>
+    </div>
+    @if($activeMembership)
+        <span class="badge-active"><i class="bi bi-shield-check"></i> Activa</span>
+    @else
+        <span class="badge-none"><i class="bi bi-x-circle"></i> Inactiva</span>
+    @endif
+</div>
 
-{{-- Tabla de historial --}}
+{{-- Sección planes --}}
+<div class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Nuestros Planes</div>
+<p class="section-subtitle">Todos los planes incluyen acceso a las instalaciones del gimnasio · Sin contratos anuales</p>
+
+@php
+    // Planes hardcoded + los de BD combinados para garantizar que siempre se muestren
+    $defaultPlans = collect([
+        (object)['id' => 1, 'name' => 'Plan Promocional',      'price' => 70000, 'duration_days' => 30,
+                 'description' => 'Acceso en horario promocional de 10:00 AM a 4:00 PM.',
+                 'type' => 'promo',
+                 'features' => [
+                     ['ok' => true,  'text' => 'Acceso a sala de musculación'],
+                     ['ok' => true,  'text' => 'Acceso a zona cardio'],
+                     ['ok' => false, 'text' => 'Clases grupales'],
+                     ['ok' => false, 'text' => 'Entrenador asignado'],
+                     ['ok' => false, 'text' => 'Plan nutricional'],
+                     ['ok' => false, 'text' => 'Zona VIP y toallas'],
+                 ]],
+        (object)['id' => 2, 'name' => 'Plan Mensual Estándar', 'price' => 85000, 'duration_days' => 30,
+                 'description' => 'Acceso libre e ilimitado a todas las instalaciones y clases grupales.',
+                 'type' => 'standard',
+                 'features' => [
+                     ['ok' => true, 'text' => 'Acceso a sala de musculación'],
+                     ['ok' => true, 'text' => 'Acceso a zona cardio'],
+                     ['ok' => true, 'text' => 'Clases grupales ilimitadas'],
+                     ['ok' => true, 'text' => 'Acceso horario completo'],
+                     ['ok' => false,'text' => 'Entrenador personal asignado'],
+                     ['ok' => false,'text' => 'Plan nutricional con IA'],
+                 ]],
+        (object)['id' => 3, 'name' => 'Plan Ultimate',         'price' => 120000, 'duration_days' => 30,
+                 'description' => 'Experiencia VIP completa: entrenador, nutrición y acceso exclusivo.',
+                 'type' => 'ultimate',
+                 'features' => [
+                     ['ok' => true, 'text' => 'Acceso a sala de musculación'],
+                     ['ok' => true, 'text' => 'Acceso a zona cardio'],
+                     ['ok' => true, 'text' => 'Clases grupales ilimitadas'],
+                     ['ok' => true, 'text' => 'Entrenador personal asignado'],
+                     ['ok' => true, 'text' => 'Plan nutricional con IA'],
+                     ['ok' => true, 'text' => 'Zona VIP · Toallas · Hidratación'],
+                 ]],
+    ]);
+
+    // Si vienen membresías reales de BD, las usamos para cruzar IDs
+    $dbMemberships = $memberships ?? collect();
+@endphp
+
+<div class="plans-grid">
+    @foreach($defaultPlans as $plan)
+    @php
+        $isCurrentPlan = $activeMembership && $activeMembership->id == $plan->id;
+        $cardClass = $plan->type === 'ultimate' ? 'ultimate' : ($plan->type === 'standard' ? 'featured' : '');
+    @endphp
+    <div class="plan-card {{ $cardClass }}">
+        {{-- Badge --}}
+        <span class="plan-badge {{ $plan->type }}">
+            @if($plan->type === 'promo') <i class="bi bi-tag-fill"></i> OFERTA
+            @elseif($plan->type === 'standard') <i class="bi bi-fire"></i> ESTÁNDAR
+            @else <i class="bi bi-gem"></i> ULTIMATE @endif
+        </span>
+
+        {{-- Nombre y descripción --}}
+        <div class="plan-name">{{ $plan->name }}</div>
+        <div class="plan-desc">{{ $plan->description }}</div>
+
+        {{-- Precio --}}
+        <div class="plan-price">
+            <span class="currency">$</span>
+            <span class="amount">{{ number_format($plan->price, 0, ',', '.') }}</span>
+            <span class="period">COP / mes</span>
+        </div>
+
+        {{-- Features --}}
+        <ul class="plan-features">
+            @foreach($plan->features as $feat)
+            <li class="{{ $feat['ok'] ? '' : 'feat-no' }}">
+                <i class="bi {{ $feat['ok'] ? 'bi-check-circle-fill feat-ok' : 'bi-x-circle-fill' }}"></i>
+                {{ $feat['text'] }}
+            </li>
+            @endforeach
+        </ul>
+
+        {{-- Botón --}}
+        @if($isCurrentPlan)
+            <button class="btn-plan current-plan" disabled>
+                <i class="bi bi-shield-check"></i> Plan Actual
+            </button>
+        @else
+            <button class="btn-plan {{ $plan->type }}" onclick="initStripeCheckout({{ $plan->id }}, this)">
+                <i class="bi bi-credit-card"></i> Adquirir Plan
+            </button>
+        @endif
+    </div>
+    @endforeach
+</div>
+
+@endif {{-- fin @if admin --}}
+
+{{-- ═══════════════════════════════════════════════════════ --}}
+{{-- HISTORIAL DE PAGOS (común para todos)                    --}}
+{{-- ═══════════════════════════════════════════════════════ --}}
+<div class="section-title" style="margin-top: 8px;"><i class="bi bi-clock-history"></i> Historial de Pagos</div>
+<p class="section-subtitle">Registro de todas tus transacciones realizadas en la plataforma.</p>
+
 @if($payments->count())
     <div class="payments-table-wrap">
         <table class="payments-table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Usuario</th>
+                    @if(auth()->user()->isAdmin())<th>Usuario</th>@endif
                     <th>Monto</th>
                     <th>Moneda</th>
                     <th>Estado</th>
@@ -198,17 +388,19 @@
             <tbody>
                 @foreach($payments as $payment)
                     <tr>
-                        <td>{{ $payment->id }}</td>
+                        <td style="color: var(--muted); font-size: 12px;">{{ $payment->id }}</td>
+                        @if(auth()->user()->isAdmin())
                         <td>{{ $payment->user->name ?? ($payment->customer_id ?? '—') }}</td>
-                        <td style="font-weight: 600; color: #fff;">
+                        @endif
+                        <td style="font-weight: 700; color: #fff;">
                             @if($payment->amount_cents)
-                                ${{ number_format($payment->amount_cents / 100, 2) }}
+                                ${{ number_format($payment->amount_cents / 100, 0, ',', '.') }}
                             @else
-                                ${{ number_format($payment->amount ?? 0, 2) }}
+                                ${{ number_format($payment->amount ?? 0, 0, ',', '.') }}
                             @endif
                         </td>
-                        <td style="text-transform: uppercase; font-size: 12px; font-weight: 600;">
-                            {{ $payment->currency ?? 'USD' }}
+                        <td style="text-transform: uppercase; font-size: 11px; font-weight: 600; color: var(--muted);">
+                            {{ $payment->currency ?? 'COP' }}
                         </td>
                         <td>
                             @php
@@ -223,12 +415,10 @@
                             <span class="badge-status {{ $statusClass }}">{{ $statusLabel }}</span>
                         </td>
                         <td>
-                            @if($payment->payment_method)
+                            @if($payment->payment_intent_id)
+                                <span style="font-family:monospace; font-size:11px; color:var(--muted);">Stripe</span>
+                            @elseif($payment->payment_method)
                                 {{ ucfirst($payment->payment_method) }}
-                            @elseif($payment->payment_intent_id)
-                                <span style="font-family:monospace; font-size:11px; color:var(--muted);">
-                                    Stripe
-                                </span>
                             @else
                                 —
                             @endif
@@ -240,12 +430,8 @@
                 @endforeach
             </tbody>
         </table>
-
-        {{-- Paginación --}}
         @if($payments->hasPages())
-            <div class="pagination-wrap">
-                {{ $payments->links() }}
-            </div>
+            <div class="pagination-wrap">{{ $payments->links() }}</div>
         @endif
     </div>
 @else
@@ -262,63 +448,57 @@
 @section('scripts')
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-(function() {
-    const stripePublicKey = @json(config('stripe.public'));
-    const stripe = Stripe(stripePublicKey);
-    const btn = document.getElementById('btn-stripe-pay');
+const stripePublicKey = @json(config('stripe.public'));
+const stripe = stripePublicKey ? Stripe(stripePublicKey) : null;
 
-    btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Redirigiendo…';
-
-        try {
-            const res = await fetch('{{ route("stripe.create.session") }}', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json' 
-                },
-                body: JSON.stringify({})
-            });
-
-            const contentType = res.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const textError = await res.text();
-                console.error("Respuesta no es JSON:", textError);
-                throw new Error("El servidor no devolvió una respuesta válida (no es JSON).");
-            }
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || 'Error al procesar la solicitud en el servidor');
-            }
-
-            if (data.sessionId) {
-                const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-                if (error) {
-                    alert('Error: ' + error.message);
-                    resetBtn();
-                }
-            } else {
-                alert('No se pudo crear la sesión de pago.');
-                resetBtn();
-            }
-        } catch (err) {
-            alert('Error de conexión: ' + err.message);
-            resetBtn();
-        }
-    });
-
-    function resetBtn() {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-credit-card"></i> Realizar nuevo pago';
+async function initStripeCheckout(membershipId, btn) {
+    if (!stripe) {
+        alert('La pasarela de pago no está configurada en este momento. Contacta al administrador.');
+        return;
     }
 
-    // Animación spin para el loading
-    const style = document.createElement('style');
-    style.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}.spin{animation:spin .6s linear infinite;}';
-    document.head.appendChild(style);
-})();
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Redirigiendo…';
+
+    try {
+        const res = await fetch('{{ route("stripe.create.session") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ membership_id: membershipId })
+        });
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('El servidor no devolvió una respuesta válida.');
+        }
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || 'Error en el servidor.');
+        }
+
+        if (data.sessionId) {
+            const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            if (error) { throw new Error(error.message); }
+        } else {
+            throw new Error('No se pudo crear la sesión de pago.');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+// Animación spin
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}.spin{animation:spin .6s linear infinite;}';
+document.head.appendChild(style);
 </script>
 @endsection

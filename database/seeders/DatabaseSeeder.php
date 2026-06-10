@@ -19,11 +19,44 @@ class DatabaseSeeder extends Seeder
             MembershipSeeder::class,
         ]);
 
-        // User::factory(10)->create();
-
+        // Administrador (role = 2)
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Administrador ToneTrainer',
+            'email' => 'm.3@gmail.com',
+            'password' => bcrypt('Maxi123.'),
+            'role' => 2,
+            'active' => true,
+            'is_verified' => true,
+        ]);
+
+        // Entrenador / Trainer (role = 4)
+        User::factory()->create([
+            'name' => 'Entrenador ToneTrainer',
+            'email' => 'trainer@tonetrainer.com',
+            'password' => bcrypt('password123'),
+            'role' => 4,
+            'active' => true,
+            'is_verified' => true,
+        ]);
+
+        // Nutricionista (role = 3)
+        User::factory()->create([
+            'name' => 'Nutricionista ToneTrainer',
+            'email' => 'nutri@tonetrainer.com',
+            'password' => bcrypt('password123'),
+            'role' => 3,
+            'active' => true,
+            'is_verified' => true,
+        ]);
+
+        // Usuario Estándar (role = 1)
+        User::factory()->create([
+            'name' => 'Usuario Test',
+            'email' => 'user@tonetrainer.com',
+            'password' => bcrypt('password123'),
+            'role' => 1,
+            'active' => true,
+            'is_verified' => true,
         ]);
     }
 }

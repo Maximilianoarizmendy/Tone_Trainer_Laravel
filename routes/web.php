@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StripeController;
-
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\NotificationController;
 
@@ -102,3 +102,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook'])->name('stripe.webhook');
+
+// === MERCADO PAGO ===
+Route::middleware('auth')->group(function () {
+    Route::post('/mercadopago/create-preference', [MercadoPagoController::class, 'createPreference'])
+        ->name('mercadopago.create.preference');
+    Route::get('/mercadopago/callback', [MercadoPagoController::class, 'paymentCallback'])
+        ->name('mercadopago.callback');
+});
+
+Route::post('/mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');

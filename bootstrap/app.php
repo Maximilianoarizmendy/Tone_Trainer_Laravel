@@ -16,14 +16,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('reminders:send')->dailyAt('08:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confiar en todos los proxies (necesario en Render, Heroku, etc. para HTTPS)
+        $middleware->trustProxies(at: '*');
+
         // Alias para el middleware de roles
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        // Excluir webhook de Stripe de la verificación CSRF
+        // Excluir webhook de Stripe y Mercado Pago de la verificación CSRF
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
+            'mercadopago/webhook',
         ]);
 
         // Las APIs usan sesiones (no tokens), así que compartimos el middleware de sesión

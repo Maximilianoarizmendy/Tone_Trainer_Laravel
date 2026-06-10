@@ -451,7 +451,7 @@ function generateAINote() {
     })
     .catch(() => showAlert('Error de red al contactar IA.', 'error'));
 }
-
+function closeNoteModal() {
     document.getElementById('noteModal').style.display = 'none';
     document.getElementById('noteForm').reset();
 }

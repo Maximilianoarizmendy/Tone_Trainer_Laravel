@@ -181,6 +181,91 @@
         .plans-grid { grid-template-columns: 1fr; }
         .payments-table-wrap { overflow-x: auto; }
     }
+
+    /* ── Modal de Selección de Pago ── */
+    .payment-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
+        display: none; align-items: center; justify-content: center;
+        z-index: 9999; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .payment-modal-overlay.active {
+        display: flex; opacity: 1;
+    }
+    .payment-modal-content {
+        background: #121214; border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px; width: 90%; max-width: 480px; padding: 32px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+    }
+    .payment-modal-overlay.active .payment-modal-content {
+        transform: scale(1);
+    }
+    .payment-modal-close {
+        position: absolute; top: 20px; right: 20px;
+        background: none; border: none; color: var(--muted);
+        font-size: 24px; cursor: pointer; transition: color 0.2s;
+        line-height: 1;
+    }
+    .payment-modal-close:hover { color: #fff; }
+    .payment-modal-title {
+        font-size: 20px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 8px;
+    }
+    .payment-modal-subtitle {
+        font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px;
+    }
+    .payment-plan-summary {
+        background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 12px; padding: 12px 16px; margin-bottom: 24px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .payment-plan-summary .plan-info .name {
+        font-weight: 700; color: #fff; font-size: 14px;
+    }
+    .payment-plan-summary .plan-info .desc {
+        font-size: 11px; color: var(--muted);
+    }
+    .payment-plan-summary .plan-price {
+        font-weight: 800; color: var(--primary); font-size: 18px;
+    }
+    
+    .payment-methods-list {
+        display: flex; flex-direction: column; gap: 16px;
+    }
+    .payment-method-card {
+        background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;
+        cursor: pointer; transition: all 0.2s ease;
+    }
+    .payment-method-card:hover {
+        background: rgba(255, 255, 255, 0.05); border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+    .payment-method-card.stripe:hover {
+        border-color: #635bff;
+    }
+    .payment-method-card.mercadopago:hover {
+        border-color: #009ee3;
+    }
+    .payment-method-icon {
+        width: 44px; height: 44px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; background: rgba(255, 255, 255, 0.04);
+        flex-shrink: 0;
+    }
+    .payment-method-card.stripe .payment-method-icon { color: #8f8bff; background: rgba(99, 91, 255, 0.1); }
+    .payment-method-card.mercadopago .payment-method-icon { color: #00c4ff; background: rgba(0, 158, 227, 0.1); }
+    
+    .payment-method-info { flex: 1; }
+    .payment-method-info .title { font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 2px; }
+    .payment-method-info .desc { font-size: 11px; color: var(--muted); }
+    .payment-method-badge {
+        font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+        background: rgba(255,255,255,0.08); color: var(--muted);
+    }
+    .payment-method-card.stripe:hover .payment-method-badge { background: rgba(99, 91, 255, 0.2); color: #8f8bff; }
+    .payment-method-card.mercadopago:hover .payment-method-badge { background: rgba(0, 158, 227, 0.2); color: #00c4ff; }
 </style>
 @endsection
 
@@ -355,7 +440,7 @@
                 <i class="bi bi-shield-check"></i> Plan Actual
             </button>
         @else
-            <button class="btn-plan {{ $plan->type }}" onclick="initStripeCheckout({{ $plan->id }}, this)">
+            <button class="btn-plan {{ $plan->type }}" onclick="openPaymentModal({{ $plan->id }}, '{{ $plan->name }}', '{{ number_format($plan->price, 0, ',', '.') }}', this)">
                 <i class="bi bi-credit-card"></i> Adquirir Plan
             </button>
         @endif
@@ -443,6 +528,49 @@
     </div>
 @endif
 
+<!-- Modal de Selección de Pago -->
+<div id="paymentModal" class="payment-modal-overlay" onclick="closePaymentModal(event)">
+    <div class="payment-modal-content" onclick="event.stopPropagation()">
+        <button class="payment-modal-close" onclick="closePaymentModal()">&times;</button>
+        <div class="payment-modal-title">Método de Pago</div>
+        <div class="payment-modal-subtitle">Escoge cómo deseas adquirir tu membresía</div>
+
+        <div class="payment-plan-summary">
+            <div class="plan-info">
+                <div class="name" id="modalPlanName">Plan</div>
+                <div class="desc">Acceso inmediato por 30 días</div>
+            </div>
+            <div class="plan-price" id="modalPlanPrice">$0 COP</div>
+        </div>
+
+        <div class="payment-methods-list">
+            <!-- Opción Stripe -->
+            <div class="payment-method-card stripe" onclick="selectPaymentMethod('stripe')">
+                <div class="payment-method-icon">
+                    <i class="bi bi-credit-card-2-front-fill"></i>
+                </div>
+                <div class="payment-method-info">
+                    <div class="title">Stripe</div>
+                    <div class="desc">Tarjeta de crédito y débito internacional</div>
+                </div>
+                <span class="payment-method-badge">USD</span>
+            </div>
+
+            <!-- Opción Mercado Pago -->
+            <div class="payment-method-card mercadopago" onclick="selectPaymentMethod('mercadopago')">
+                <div class="payment-method-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="payment-method-info">
+                    <div class="title">Mercado Pago</div>
+                    <div class="desc">PSE, efecty, tarjetas locales y más</div>
+                </div>
+                <span class="payment-method-badge">COP</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -450,6 +578,41 @@
 <script>
 const stripePublicKey = @json(config('stripe.public'));
 const stripe = stripePublicKey ? Stripe(stripePublicKey) : null;
+
+let selectedMembershipId = null;
+let triggeringButton = null;
+
+function openPaymentModal(membershipId, name, price, btn) {
+    selectedMembershipId = membershipId;
+    triggeringButton = btn;
+    
+    document.getElementById('modalPlanName').innerText = name;
+    document.getElementById('modalPlanPrice').innerText = '$' + price + ' COP';
+    
+    const modal = document.getElementById('paymentModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closePaymentModal(event) {
+    if (event && event.target !== document.getElementById('paymentModal') && event.target !== document.querySelector('.payment-modal-close')) {
+        return;
+    }
+    const modal = document.getElementById('paymentModal');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+async function selectPaymentMethod(method) {
+    closePaymentModal();
+    if (!selectedMembershipId || !triggeringButton) return;
+
+    if (method === 'stripe') {
+        await initStripeCheckout(selectedMembershipId, triggeringButton);
+    } else if (method === 'mercadopago') {
+        await initMercadoPagoCheckout(selectedMembershipId, triggeringButton);
+    }
+}
 
 async function initStripeCheckout(membershipId, btn) {
     if (!stripe) {
@@ -488,6 +651,45 @@ async function initStripeCheckout(membershipId, btn) {
             if (error) { throw new Error(error.message); }
         } else {
             throw new Error('No se pudo crear la sesión de pago.');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function initMercadoPagoCheckout(membershipId, btn) {
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Redirigiendo…';
+
+    try {
+        const res = await fetch('{{ route("mercadopago.create.preference") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ membership_id: membershipId })
+        });
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('El servidor no devolvió una respuesta válida.');
+        }
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || 'Error en el servidor.');
+        }
+
+        if (data.init_point) {
+            window.location.href = data.init_point;
+        } else {
+            throw new Error('No se pudo crear la preferencia de Mercado Pago.');
         }
     } catch (err) {
         alert('Error: ' + err.message);

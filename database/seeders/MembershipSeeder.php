@@ -16,7 +16,7 @@ class MembershipSeeder extends Seeder
             ['id' => 1],
             [
                 'name' => 'Plan Promocional',
-                'price' => 70000.00,
+                'price' => 1000.00,
                 'duration_days' => 30,
                 'description' => 'Acceso a salas de musculación y cardio en horario promocional (de 10:00 AM a 4:00 PM).'
             ]

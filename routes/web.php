@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StripeController;
-use App\Http\Controllers\MessageController;
+use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\NotificationController;
 

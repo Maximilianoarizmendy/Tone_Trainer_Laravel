@@ -51,9 +51,13 @@ class MercadoPagoController extends Controller
                 "external_reference" => $externalReference,
             ]);
 
+            $initPoint = str_starts_with(config('mercadopago.access_token', ''), 'TEST-')
+                ? $preference->sandbox_init_point
+                : $preference->init_point;
+
             return response()->json([
                 'success' => true,
-                'init_point' => $preference->init_point,
+                'init_point' => $initPoint,
                 'preferenceId' => $preference->id
             ]);
         } catch (\Exception $e) {

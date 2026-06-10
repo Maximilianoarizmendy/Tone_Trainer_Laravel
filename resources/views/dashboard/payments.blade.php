@@ -397,6 +397,16 @@
 
     // Si vienen membresías reales de BD, las usamos para cruzar IDs
     $dbMemberships = $memberships ?? collect();
+
+    $defaultPlans = $defaultPlans->map(function ($plan) use ($dbMemberships) {
+        $dbPlan = $dbMemberships->firstWhere('id', $plan->id);
+        if ($dbPlan) {
+            $plan->price = $dbPlan->price;
+            $plan->name = $dbPlan->name;
+            $plan->description = $dbPlan->description;
+        }
+        return $plan;
+    });
 @endphp
 
 <div class="plans-grid">

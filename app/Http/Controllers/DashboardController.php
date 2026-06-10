@@ -91,7 +91,8 @@ class DashboardController extends Controller
         }
 
         $payments = $query->paginate(15);
-        return view('dashboard.payments', compact('payments'));
+        $memberships = \App\Models\Membership::all();
+        return view('dashboard.payments', compact('payments', 'memberships'));
     }
 
     /**

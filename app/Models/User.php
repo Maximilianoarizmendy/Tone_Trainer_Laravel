@@ -36,7 +36,7 @@ class User extends Authenticatable
     const ROLE_TRAINER      = 4;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'active',
+        'name', 'email', 'password', 'role', 'active', 'membership_id',
         'birthdate', 'profile_photo', 'medical_history',
         'phone', 'location', 'goal', 'level',
         'weight', 'height', 'imc',
@@ -177,6 +177,11 @@ class User extends Authenticatable
     public function assignedUsers()
     {
         return $this->hasMany(User::class, 'trainer_id');
+    }
+
+    public function membership()
+    {
+        return $this->belongsTo(Membership::class);
     }
 
     public function payments()

@@ -95,7 +95,7 @@ class UserController extends Controller
             }
         }
 
-        $data = $request->validate([
+        $rules = [
             'name'     => 'nullable|string|max:100',
             'phone'    => 'nullable|string|max:20',
             'location' => 'nullable|string|max:100',
@@ -103,7 +103,13 @@ class UserController extends Controller
             'level'    => 'nullable|string|max:50',
             'weight'   => 'nullable|numeric|min:0|max:500',
             'height'   => 'nullable|numeric|min:0|max:300',
-        ]);
+        ];
+
+        if ($me->role === User::ROLE_ADMIN) {
+            $rules['role'] = 'nullable|integer|in:1,3,4';
+        }
+
+        $data = $request->validate($rules);
 
         $user->update(array_filter($data, fn($v) => $v !== null));
 
@@ -128,11 +134,21 @@ class UserController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $me = auth()->user();
-        if ($me->role !== User::ROLE_ADMIN) {
-            return response()->json(['success' => false, 'message' => 'Solo el admin puede desactivar'], 403);
+        if (!in_array($me->role, [User::ROLE_ADMIN, User::ROLE_NUTRITIONIST, User::ROLE_TRAINER])) {
+            return response()->json(['success' => false, 'message' => 'Sin permisos'], 403);
         }
 
         $user = User::findOrFail($id);
+
+        if ($me->role !== User::ROLE_ADMIN) {
+            if ($me->role === User::ROLE_TRAINER && $user->trainer_id !== $me->id) {
+                return response()->json(['success' => false, 'message' => 'No es tu usuario'], 403);
+            }
+            if ($me->role === User::ROLE_NUTRITIONIST && $user->nutritionist_id !== $me->id) {
+                return response()->json(['success' => false, 'message' => 'No es tu usuario'], 403);
+            }
+        }
+
         $user->active = false;
         $user->save();
 

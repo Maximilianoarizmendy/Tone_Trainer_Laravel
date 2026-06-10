@@ -64,16 +64,13 @@ class DashboardController extends Controller
     public function messages()
     {
         $user = auth()->user();
-        
-        $contacts = collect();
-        if ($user->role === User::ROLE_USER && $user->trainer_id) {
-            // Cliente ve a su entrenador
-            $trainer = User::find($user->trainer_id);
-            if ($trainer) $contacts->push($trainer);
-        } elseif ($user->role === User::ROLE_TRAINER) {
-            // Entrenador ve a sus clientes
-            $contacts = User::where('trainer_id', $user->id)->where('active', true)->get();
-        }
+
+        // Todos los usuarios activos del gym excepto el propio
+        $contacts = User::where('id', '!=', $user->id)
+            ->where('active', true)
+            ->orderBy('role')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role', 'profile_photo']);
 
         return view('dashboard.messages', compact('user', 'contacts'));
     }

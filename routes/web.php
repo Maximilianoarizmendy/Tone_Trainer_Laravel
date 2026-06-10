@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StripeController;
-use App\Http\Controllers\MessageController;
+
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\NotificationController;
 
@@ -81,11 +81,6 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
 
     // Ranking
     Route::get('/ranking', [DashboardController::class, 'ranking'])->name('ranking');
-
-    // Mensajería AJAX
-    Route::get('/api/messages/{contact_id}', [MessageController::class, 'fetchMessages']);
-    Route::post('/api/messages',             [MessageController::class, 'sendMessage']);
-    Route::get('/api/messages/unread-count', [MessageController::class, 'unreadCount']);
 
     // Notificaciones AJAX
     Route::get('/api/notifications',           [NotificationController::class, 'index']);

@@ -61,7 +61,9 @@ class LoginController extends Controller
     private function getRedirectByRole(int $role): string
     {
         return match($role) {
-            User::ROLE_ADMIN, User::ROLE_NUTRITIONIST, User::ROLE_TRAINER => route('dashboard.users'),
+            User::ROLE_ADMIN => route('dashboard.users'),
+            User::ROLE_NUTRITIONIST => route('dashboard.nutritionist'),
+            User::ROLE_TRAINER => route('dashboard.trainer'),
             default => route('dashboard.index'),
         };
     }

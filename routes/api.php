@@ -39,10 +39,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('messages')->group(function () {
         Route::get('/conversations',      [MessageController::class, 'conversations']);
         Route::get('/thread',             [MessageController::class, 'thread']);
+        Route::get('/poll',               [MessageController::class, 'poll']);          // Polling eficiente por timestamp
+        Route::get('/unread-count',       [MessageController::class, 'unreadCount']);
         Route::post('/send',              [MessageController::class, 'send']);
         Route::put('/{id}',               [MessageController::class, 'edit']);
         Route::delete('/{id}',            [MessageController::class, 'destroy']);
-        Route::get('/unread-count',       [MessageController::class, 'unreadCount']);
     });
 
     // === NUTRITION ===

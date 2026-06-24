@@ -115,6 +115,21 @@
             Mi Rutina de Entrenamiento
         @endif
     </h1>
+    @if($user->isTrainer() || $user->isAdmin())
+        <div style="background:var(--surface); padding:8px 12px; border-radius:8px; border:1px solid #333; display:flex; align-items:center; gap:10px;">
+            <label style="font-size:13px; color:var(--muted); margin:0;">Seleccionar Alumno:</label>
+            <select onchange="window.location.href='?user_id=' + this.value" style="padding:6px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; font-size:13px;">
+                <option value="{{ $user->id }}">Mi propia rutina</option>
+                @if(isset($students))
+                    @foreach($students as $student)
+                        <option value="{{ $student->id }}" {{ request()->query('user_id') == $student->id ? 'selected' : '' }}>
+                            {{ $student->name }}
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+        </div>
+    @endif
 </div>
 
 {{-- ── Barra de progreso (usuario normal) ───────────── --}}

@@ -53,6 +53,25 @@
     <div class="target-badge"><div class="target-val" id="totalFat">0g</div><div class="target-lbl">Grasas</div></div>
 </div>
 
+<div class="section-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <h2>📅 Plan de la Semana</h2>
+    @if($user->isAdmin() || $user->isNutritionist())
+        <div style="background:var(--surface); padding:8px 12px; border-radius:8px; border:1px solid #333; display:flex; align-items:center; gap:10px;">
+            <label style="font-size:13px; color:var(--muted); margin:0;">Seleccionar Paciente:</label>
+            <select onchange="window.location.href='?user_id=' + this.value" style="padding:6px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; font-size:13px;">
+                <option value="{{ $user->id }}">Mi propio plan</option>
+                @if(isset($patients))
+                    @foreach($patients as $patient)
+                        <option value="{{ $patient->id }}" {{ request()->query('user_id') == $patient->id ? 'selected' : '' }}>
+                            {{ $patient->name }}
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+        </div>
+    @endif
+</div>
+
 {{-- Formulario agregar (Admin/Nutri) --}}
 @if($user->isAdmin() || $user->isNutritionist())
 <div class="add-meal-form">
@@ -78,10 +97,6 @@
             <input type="number" id="{{ $key }}" placeholder="0" min="0">
         </div>
         @endforeach
-    </div>
-    <div class="form-group">
-        <label>Usuario objetivo</label>
-        <input type="number" id="targetUserId" placeholder="ID del usuario (déjalo vacío para ti)">
     </div>
     <button class="btn-primary" onclick="addMeal()">Agregar Comida</button>
     <button class="btn-danger" onclick="resetPlan()">🗑️ Resetear Plan</button>
@@ -118,6 +133,7 @@
 <script>
 let currentDay = 'Lunes';
 let allMeals   = [];
+const targetUserId = new URLSearchParams(window.location.search).get('user_id') || '';
 
 function selectDay(day, btn) {
     currentDay = day;
@@ -127,7 +143,11 @@ function selectDay(day, btn) {
 }
 
 async function loadMeals() {
-    const res  = await fetch('/api/nutrition/meals');
+    let url = '/api/nutrition/meals';
+    if (targetUserId) {
+        url += `?target_user_id=${targetUserId}`;
+    }
+    const res  = await fetch(url);
     const data = await res.json();
     if (data.success) { allMeals = data.data; renderMeals(); }
 }
@@ -188,7 +208,7 @@ async function addMeal() {
         protein:   document.getElementById('protein').value,
         carbs:     document.getElementById('carbs').value,
         fats:      document.getElementById('fats').value,
-        target_user_id: document.getElementById('targetUserId')?.value || null,
+        target_user_id: targetUserId || null,
     };
     if (!body.foodName || !body.calories) { showToast('⚠️ Nombre y calorías son obligatorios'); return; }
     const r = await fetch('/api/nutrition/meals', {
@@ -201,7 +221,11 @@ async function addMeal() {
 
 async function deleteMeal(id) {
     if (!confirm('¿Eliminar esta comida?')) return;
-    await fetch(`/api/nutrition/meals/${id}`, { method: 'DELETE' });
+    let url = `/api/nutrition/meals/${id}`;
+    if (targetUserId) {
+        url += `?target_user_id=${targetUserId}`;
+    }
+    await fetch(url, { method: 'DELETE' });
     showToast('🗑️ Comida eliminada'); loadMeals();
 }
 
@@ -274,7 +298,11 @@ async function deleteFoodLog(id) {
 
 async function resetPlan() {
     if (!confirm('¿Resetear todo el plan nutricional?')) return;
-    await fetch('/api/nutrition/meals', { method: 'DELETE' });
+    let url = '/api/nutrition/meals';
+    if (targetUserId) {
+        url += `?target_user_id=${targetUserId}`;
+    }
+    await fetch(url, { method: 'DELETE' });
     showToast('🔄 Plan reseteado'); loadMeals();
 }
 

@@ -449,10 +449,57 @@
 /* ═══════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════ */
+.btn-back {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 8px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.btn-back:hover {
+    background: var(--surface2);
+}
+
 @media (max-width: 768px) {
-    .messages-layout { grid-template-columns: 1fr; }
-    .contacts-panel  { display: none; }
-    .contacts-panel.mobile-open { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; }
+    .messages-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Por defecto en móvil, mostramos el panel de contactos y ocultamos el chat */
+    .contacts-panel {
+        display: flex;
+        width: 100%;
+        border-right: none;
+    }
+    
+    .chat-panel {
+        display: none;
+    }
+    
+    /* Cuando se abre un chat, ocultamos contactos y mostramos el chat */
+    .messages-layout.show-chat .contacts-panel {
+        display: none;
+    }
+    
+    .messages-layout.show-chat .chat-panel {
+        display: flex;
+        width: 100%;
+    }
+    
+    .btn-back {
+        display: flex;
+    }
 }
 
 /* Estilos para Modal de Agregar Contacto y Solicitudes */
@@ -660,6 +707,9 @@
 
             <!-- Header -->
             <div class="chat-header">
+                <button class="btn-back" onclick="closeChatMobile()" title="Volver a contactos">
+                    ←
+                </button>
                 <div class="chat-header-avatar" id="chatAvatar">?</div>
                 <div class="chat-header-info">
                     <div class="chat-header-name" id="chatName"></div>
@@ -843,13 +893,21 @@ function renderContacts() {
 }
 
 /* ═══════════════════════════════════════════════════
-   ABRIR CHAT
+   ABRIR / CERRAR CHAT
    ═══════════════════════════════════════════════════ */
+function closeChatMobile() {
+    document.getElementById('messagesLayout').classList.remove('show-chat');
+    stopPolling();
+    currentContact = null;
+    renderContacts();
+}
+
 async function openChat(contactId) {
     currentContact = allContacts.find(c => c.id === contactId);
     if (!currentContact) return;
 
     // UI
+    document.getElementById('messagesLayout').classList.add('show-chat');
     document.getElementById('noChatState').style.display = 'none';
     const chatActive = document.getElementById('chatActive');
     chatActive.style.display = 'flex';

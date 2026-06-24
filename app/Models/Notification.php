@@ -11,7 +11,7 @@ class Notification extends Model
     const CREATED_AT = 'created_at';
     const UPDATED_AT = null;
 
-    protected $table = 'notifications';
+    protected $table = 'user_notifications';
 
     protected $fillable = [
         'user_id', 'from_user_id', 'type', 'message', 'is_read',

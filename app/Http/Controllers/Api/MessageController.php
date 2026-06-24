@@ -304,6 +304,15 @@ class MessageController extends Controller
             'status'      => 'pending',
         ]);
 
+        // Crear notificación de sistema para el destinatario
+        \App\Models\Notification::create([
+            'user_id'      => $receiverId,
+            'from_user_id' => $myId,
+            'type'         => 'contacto_solicitud',
+            'message'      => auth()->user()->name . " te ha enviado una solicitud de contacto.",
+            'is_read'      => false,
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Solicitud enviada correctamente.',
@@ -323,6 +332,15 @@ class MessageController extends Controller
             ->firstOrFail();
 
         $req->update(['status' => 'accepted']);
+
+        // Crear notificación de sistema para el remitente original
+        \App\Models\Notification::create([
+            'user_id'      => $req->sender_id,
+            'from_user_id' => $myId,
+            'type'         => 'contacto_aceptado',
+            'message'      => auth()->user()->name . " ha aceptado tu solicitud de contacto. ¡Ya pueden chatear!",
+            'is_read'      => false,
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Solicitud aceptada. Ahora pueden chatear.']);
     }

@@ -40,13 +40,15 @@ class DashboardController extends Controller
     public function training()
     {
         $user = auth()->user();
-        return view('dashboard.training', compact('user'));
+        $students = User::where('role', User::ROLE_USER)->where('active', true)->get();
+        return view('dashboard.training', compact('user', 'students'));
     }
 
     public function nutrition()
     {
         $user = auth()->user();
-        return view('dashboard.nutrition', compact('user'));
+        $patients = User::where('role', User::ROLE_USER)->where('active', true)->get();
+        return view('dashboard.nutrition', compact('user', 'patients'));
     }
 
     public function progress()

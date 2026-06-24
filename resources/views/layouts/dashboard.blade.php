@@ -216,7 +216,7 @@
             <div class="nav-section">Nutricionista</div>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users') ? 'active' : '' }}">
-                <i class="bi bi-people-fill"></i> Mis Pacientes
+                <i class="bi bi-people-fill"></i> Mis Clientes
             </a>
         @endif
 

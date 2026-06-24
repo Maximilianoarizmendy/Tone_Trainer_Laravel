@@ -115,6 +115,7 @@
             Mi Rutina de Entrenamiento
         @endif
     </h1>
+
 </div>
 
 {{-- ── Barra de progreso (usuario normal) ───────────── --}}

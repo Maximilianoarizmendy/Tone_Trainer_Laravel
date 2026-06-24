@@ -88,12 +88,26 @@
         </div>
         @if($myRole !== 'user')
         <div class="user-actions">
-            <button onclick="editUser({{ $u->id }})" class="btn-edit"><i class="bi bi-pencil"></i> Editar</button>
-            @if($myRole === 'admin' || $myRole === 'nutritionist')
-            <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
+            @if($myRole === 'admin')
+                <button onclick="editUser({{ $u->id }})" class="btn-edit"><i class="bi bi-pencil"></i> Editar</button>
+            @elseif($myRole === 'trainer')
+                <button onclick="openTrainingModal({{ $u->id }}, '{{ $u->name }}')"
+                    class="btn-edit" style="background:var(--primary); display:flex; justify-content:center; align-items:center; gap:5px;">
+                    <i class="bi bi-activity"></i> Plan de Entrenamiento
+                </button>
+            @elseif($myRole === 'nutritionist')
+                <button onclick="openNutritionModal({{ $u->id }}, '{{ $u->name }}')"
+                    class="btn-edit" style="background:#22c55e; display:flex; justify-content:center; align-items:center; gap:5px;">
+                    <i class="bi bi-egg-fried"></i> Plan Nutricional
+                </button>
             @endif
+
             @if($myRole === 'admin' || $myRole === 'nutritionist')
-            <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
+                <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
+            @endif
+
+            @if($myRole === 'admin' || $myRole === 'nutritionist')
+                <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
             @endif
         </div>
         
@@ -273,6 +287,123 @@
     </div>
 </div>
 
+{{-- ══════════ MODAL PLAN DE ENTRENAMIENTO ══════════ --}}
+<div id="trainingModal" class="modal-hidden">
+    <div class="modal-content" style="max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h3 style="margin:0;"><i class="bi bi-activity" style="color:var(--primary);"></i> Plan de Entrenamiento</h3>
+            <button onclick="closeTrainingModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <p id="trainingModalSubtitle" style="font-size:13px; color:var(--muted); margin-bottom:18px;"></p>
+
+        {{-- Lista de ejercicios asignados --}}
+        <div style="margin-bottom:16px;">
+            <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Rutina actual</div>
+            <div id="trainingPlanList" style="max-height:200px; overflow-y:auto;"></div>
+        </div>
+
+        {{-- Formulario agregar ejercicio --}}
+        <div style="border-top:1px solid var(--border); padding-top:16px;">
+            <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Agregar ejercicio</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Grupo / Día *</label>
+                    <input type="text" id="tm_dayGroup" placeholder="Ej: Pecho, Lunes" list="tmDayOptions" class="form-control" style="font-size:12px;">
+                    <datalist id="tmDayOptions">
+                        <option value="Lunes"><option value="Martes"><option value="Miércoles">
+                        <option value="Jueves"><option value="Viernes"><option value="Sábado">
+                        <option value="Pecho"><option value="Espalda"><option value="Pierna"><option value="Brazos">
+                    </datalist>
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Ejercicio *</label>
+                    <input type="text" id="tm_exercise" placeholder="Nombre del ejercicio" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Series *</label>
+                    <input type="number" id="tm_series" placeholder="3" min="1" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Repeticiones</label>
+                    <input type="number" id="tm_reps" placeholder="12" min="1" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Duración</label>
+                    <input type="text" id="tm_duration" placeholder="Ej: 60s, 2min" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Descripción</label>
+                    <input type="text" id="tm_desc" placeholder="Tip adicional" class="form-control" style="font-size:12px;">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="addTrainingExercise()" class="btn-save"><i class="bi bi-plus-circle"></i> Agregar Ejercicio</button>
+                <button onclick="closeTrainingModal()" class="btn-cancel">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ══════════ MODAL PLAN NUTRICIONAL ══════════ --}}
+<div id="nutritionModal" class="modal-hidden">
+    <div class="modal-content" style="max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h3 style="margin:0;"><i class="bi bi-egg-fried" style="color:#22c55e;"></i> Plan Nutricional</h3>
+            <button onclick="closeNutritionModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <p id="nutritionModalSubtitle" style="font-size:13px; color:var(--muted); margin-bottom:18px;"></p>
+
+        {{-- Plan actual por día --}}
+        <div style="margin-bottom:10px;">
+            <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Comidas asignadas</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;" id="nm_dayTabs">
+                @foreach(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'] as $d)
+                    <button onclick="nmSelectDay('{{ $d }}', this)" class="nm-tab {{ $loop->first ? 'nm-tab-active' : '' }}">{{ $d }}</button>
+                @endforeach
+            </div>
+            <div id="nutritionPlanList" style="max-height:160px; overflow-y:auto;"></div>
+        </div>
+
+        {{-- Formulario agregar comida --}}
+        <div style="border-top:1px solid var(--border); padding-top:14px;">
+            <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Agregar comida</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Alimento *</label>
+                    <input type="text" id="nm_food" placeholder="Ej: Pechuga de pollo" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Tipo de comida *</label>
+                    <select id="nm_mealType" class="form-control" style="font-size:12px;">
+                        <option>Desayuno</option><option>Media Mañana</option><option>Almuerzo</option>
+                        <option>Merienda</option><option>Cena</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Calorías</label>
+                    <input type="number" id="nm_cal" placeholder="0" min="0" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Proteínas (g)</label>
+                    <input type="number" id="nm_prot" placeholder="0" min="0" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Carbos (g)</label>
+                    <input type="number" id="nm_carb" placeholder="0" min="0" class="form-control" style="font-size:12px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Grasas (g)</label>
+                    <input type="number" id="nm_fat" placeholder="0" min="0" class="form-control" style="font-size:12px;">
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="addNutritionMeal()" class="btn-save" style="background:#22c55e;"><i class="bi bi-plus-circle"></i> Agregar Comida</button>
+                <button onclick="closeNutritionModal()" class="btn-cancel">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .toolbar { margin-bottom: 16px; }
 .btn-add { padding: 10px 20px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 13px; }
@@ -311,6 +442,9 @@
     .users-grid { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
 }
+.nm-tab { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); font-size: 11px; cursor: pointer; transition: all .15s; }
+.nm-tab:hover { border-color: #22c55e; color: #22c55e; }
+.nm-tab-active { background: #22c55e; border-color: #22c55e; color: #fff; font-weight: 600; }
 </style>
 
 <script>
@@ -455,5 +589,186 @@ function closeNoteModal() {
     document.getElementById('noteModal').style.display = 'none';
     document.getElementById('noteForm').reset();
 }
+
+// ══════════ TRAINING MODAL ══════════
+let tmUserId = null;
+
+function openTrainingModal(userId, userName) {
+    tmUserId = userId;
+    document.getElementById('trainingModalSubtitle').textContent = `Gestionando rutina de: ${userName}`;
+    document.getElementById('trainingModal').style.display = 'flex';
+    loadTrainingPlan();
+}
+
+function closeTrainingModal() {
+    document.getElementById('trainingModal').style.display = 'none';
+    tmUserId = null;
+    ['tm_dayGroup','tm_exercise','tm_series','tm_reps','tm_duration','tm_desc'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+}
+
+async function loadTrainingPlan() {
+    const res = await fetch(`/api/training-plan?user_id=${tmUserId}`);
+    const data = await res.json();
+    const container = document.getElementById('trainingPlanList');
+    if (!data.success || !data.data.length) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Sin ejercicios asignados aún.</p>';
+        return;
+    }
+    const groups = {};
+    data.data.forEach(ex => {
+        if (!groups[ex.day_group]) groups[ex.day_group] = [];
+        groups[ex.day_group].push(ex);
+    });
+    let html = '';
+    Object.entries(groups).forEach(([group, exList]) => {
+        html += `<div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--primary);font-weight:700;text-transform:uppercase;margin-bottom:4px;">${group}</div>`;
+        exList.forEach(ex => {
+            let meta = `${ex.series} series`;
+            if (ex.reps) meta += ` × ${ex.reps} reps`;
+            if (ex.duration) meta += ` (${ex.duration})`;
+            html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a2a;">
+                <div>
+                    <div style="font-size:12px;color:#fff;">${ex.exercise}</div>
+                    <div style="font-size:11px;color:var(--muted);">${meta}</div>
+                </div>
+                <button onclick="deleteTrainingEx(${ex.id})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">🗑️</button>
+            </div>`;
+        });
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+async function addTrainingExercise() {
+    const body = {
+        user_id:     tmUserId,
+        day_group:   document.getElementById('tm_dayGroup').value.trim(),
+        exercise:    document.getElementById('tm_exercise').value.trim(),
+        series:      parseInt(document.getElementById('tm_series').value),
+        reps:        document.getElementById('tm_reps').value ? parseInt(document.getElementById('tm_reps').value) : null,
+        duration:    document.getElementById('tm_duration').value.trim(),
+        description: document.getElementById('tm_desc').value.trim(),
+    };
+    if (!body.day_group || !body.exercise || !body.series) {
+        showAlert('Completa Grupo, Ejercicio y Series.', 'error'); return;
+    }
+    if (!body.reps && !body.duration) {
+        showAlert('Ingresa Repeticiones o Duración.', 'error'); return;
+    }
+    const r = await fetch('/api/training-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+        body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.success) {
+        showAlert('Ejercicio agregado.', 'success');
+        ['tm_dayGroup','tm_exercise','tm_series','tm_reps','tm_duration','tm_desc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        loadTrainingPlan();
+    } else {
+        showAlert(d.message || 'Error al guardar.', 'error');
+    }
+}
+
+async function deleteTrainingEx(id) {
+    if (!confirm('¿Eliminar este ejercicio?')) return;
+    await fetch(`/api/training-plan/${id}?user_id=${tmUserId}`, { method: 'DELETE' });
+    loadTrainingPlan();
+}
+
+// ══════════ NUTRITION MODAL ══════════
+let nmUserId = null;
+let nmDay = 'Lunes';
+let nmMeals = [];
+
+function openNutritionModal(userId, userName) {
+    nmUserId = userId;
+    document.getElementById('nutritionModalSubtitle').textContent = `Gestionando plan nutricional de: ${userName}`;
+    document.getElementById('nutritionModal').style.display = 'flex';
+    loadNutritionPlan();
+}
+
+function closeNutritionModal() {
+    document.getElementById('nutritionModal').style.display = 'none';
+    nmUserId = null;
+    ['nm_food','nm_cal','nm_prot','nm_carb','nm_fat'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+function nmSelectDay(day, btn) {
+    nmDay = day;
+    document.querySelectorAll('.nm-tab').forEach(b => b.classList.remove('nm-tab-active'));
+    btn.classList.add('nm-tab-active');
+    renderNutritionPlan();
+}
+
+async function loadNutritionPlan() {
+    const res = await fetch(`/api/nutrition/meals?target_user_id=${nmUserId}`);
+    const data = await res.json();
+    nmMeals = data.success ? data.data : [];
+    renderNutritionPlan();
+}
+
+function renderNutritionPlan() {
+    const container = document.getElementById('nutritionPlanList');
+    const dayMeals = nmMeals.filter(m => m.day_of_week === nmDay);
+    if (!dayMeals.length) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Sin comidas para este día.</p>';
+        return;
+    }
+    let html = '';
+    dayMeals.forEach(m => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #2a2a2a;">
+            <div>
+                <div style="font-size:12px;color:#fff;">${m.food_name} <span style="font-size:10px;color:var(--muted);">(${m.meal_type})</span></div>
+                <div style="font-size:11px;color:var(--muted);">${m.calories} kcal · P:${m.protein}g · C:${m.carbs}g · G:${m.fats}g</div>
+            </div>
+            <button onclick="deleteNutritionMeal(${m.id})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">🗑️</button>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+async function addNutritionMeal() {
+    const body = {
+        day:       nmDay,
+        mealTime:  document.getElementById('nm_mealType').value,
+        foodName:  document.getElementById('nm_food').value.trim(),
+        calories:  parseInt(document.getElementById('nm_cal').value) || 0,
+        protein:   parseInt(document.getElementById('nm_prot').value) || 0,
+        carbs:     parseInt(document.getElementById('nm_carb').value) || 0,
+        fats:      parseInt(document.getElementById('nm_fat').value) || 0,
+        target_user_id: nmUserId,
+    };
+    if (!body.foodName || !body.calories) { showAlert('Ingresa al menos el alimento y las calorías.', 'error'); return; }
+    const r = await fetch('/api/nutrition/meals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+        body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.success) {
+        showAlert('Comida agregada.', 'success');
+        ['nm_food','nm_cal','nm_prot','nm_carb','nm_fat'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        loadNutritionPlan();
+    } else {
+        showAlert(d.message || 'Error al guardar.', 'error');
+    }
+}
+
+async function deleteNutritionMeal(id) {
+    if (!confirm('¿Eliminar esta comida?')) return;
+    await fetch(`/api/nutrition/meals/${id}?target_user_id=${nmUserId}`, { method: 'DELETE' });
+    loadNutritionPlan();
+}
+
+// Cerrar modales al click fuera
+document.getElementById('trainingModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTrainingModal();
+});
+document.getElementById('nutritionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeNutritionModal();
+});
 </script>
 @endsection

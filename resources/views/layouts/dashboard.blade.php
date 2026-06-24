@@ -214,6 +214,10 @@
         {{-- NUTRICIONISTA (rol 3) --}}
         @if(auth()->user()->isNutritionist())
             <div class="nav-section">Nutricionista</div>
+            <a href="{{ route('dashboard.nutritionist') }}"
+               class="nav-item {{ request()->routeIs('dashboard.nutritionist') ? 'active' : '' }}">
+                <i class="bi bi-egg-fried"></i> Nutrición
+            </a>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Mis Pacientes
@@ -223,6 +227,10 @@
         {{-- ENTRENADOR (rol 4) --}}
         @if(auth()->user()->isTrainer())
             <div class="nav-section">Entrenador</div>
+            <a href="{{ route('dashboard.trainer') }}"
+               class="nav-item {{ request()->routeIs('dashboard.trainer') ? 'active' : '' }}">
+                <i class="bi bi-activity"></i> Entrenamiento
+            </a>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Mis Alumnos

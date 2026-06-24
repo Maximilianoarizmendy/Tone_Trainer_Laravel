@@ -88,12 +88,20 @@
         </div>
         @if($myRole !== 'user')
         <div class="user-actions">
-            <button onclick="editUser({{ $u->id }})" class="btn-edit"><i class="bi bi-pencil"></i> Editar</button>
-            @if($myRole === 'admin' || $myRole === 'nutritionist')
-            <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
+            @if($myRole === 'admin')
+                <button onclick="editUser({{ $u->id }})" class="btn-edit"><i class="bi bi-pencil"></i> Editar</button>
+            @elseif($myRole === 'trainer')
+                <a href="{{ route('dashboard.training') }}?user_id={{ $u->id }}" class="btn-edit" style="text-decoration:none; display:flex; justify-content:center; align-items:center; background:var(--primary); gap:5px;"><i class="bi bi-activity"></i> Plan de Entrenamiento</a>
+            @elseif($myRole === 'nutritionist')
+                <a href="{{ route('dashboard.nutrition') }}?user_id={{ $u->id }}" class="btn-edit" style="text-decoration:none; display:flex; justify-content:center; align-items:center; background:#22c55e; gap:5px;"><i class="bi bi-egg-fried"></i> Plan Nutricional</a>
             @endif
+
             @if($myRole === 'admin' || $myRole === 'nutritionist')
-            <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
+                <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
+            @endif
+
+            @if($myRole === 'admin' || $myRole === 'nutritionist')
+                <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
             @endif
         </div>
         

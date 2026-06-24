@@ -181,12 +181,12 @@ class DashboardController extends Controller
 
     public function nutritionist()
     {
-        return $this->nutrition();
+        return $this->users();
     }
 
     public function trainer()
     {
-        return $this->training();
+        return $this->users();
     }
 
     public function trainerPlans()

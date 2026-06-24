@@ -44,6 +44,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/send',              [MessageController::class, 'send']);
         Route::put('/{id}',               [MessageController::class, 'edit']);
         Route::delete('/{id}',            [MessageController::class, 'destroy']);
+
+        // Contact Requests
+        Route::get('/contacts/search',       [MessageController::class, 'searchUsers']);
+        Route::get('/requests/pending',      [MessageController::class, 'pendingRequests']);
+        Route::post('/requests/send',        [MessageController::class, 'sendRequest']);
+        Route::post('/requests/{id}/accept',  [MessageController::class, 'acceptRequest']);
+        Route::post('/requests/{id}/decline', [MessageController::class, 'declineRequest']);
     });
 
     // === NUTRITION ===

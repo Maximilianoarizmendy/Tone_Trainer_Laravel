@@ -448,11 +448,157 @@
 
 /* ═══════════════════════════════════════════════════
    RESPONSIVE
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
     .messages-layout { grid-template-columns: 1fr; }
     .contacts-panel  { display: none; }
     .contacts-panel.mobile-open { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; }
+}
+
+/* Estilos para Modal de Agregar Contacto y Solicitudes */
+@keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.btn-add-contact:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+.pending-request-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.pending-request-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pending-request-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pending-request-email {
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pending-request-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-action-accept, .btn-action-decline {
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: background 0.15s;
+}
+
+.btn-action-accept {
+    background: #48bb78;
+    color: #fff;
+}
+.btn-action-accept:hover {
+    background: #38a169;
+}
+
+.btn-action-decline {
+    background: #f56565;
+    color: #fff;
+}
+.btn-action-decline:hover {
+    background: #e53e3e;
+}
+
+/* Modal Search Items */
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.search-result-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #ff6347);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+.search-result-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-role {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.btn-request-send {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    background: var(--primary);
+    color: #fff;
+    transition: opacity 0.15s;
+}
+.btn-request-send:hover {
+    opacity: 0.9;
+}
+.btn-request-send:disabled {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
 }
 </style>
 @endsection
@@ -464,10 +610,24 @@
     <div class="contacts-panel" id="contactsPanel">
 
         <div class="contacts-header">
-            <h3>💬 Mensajería</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0;">💬 Mensajería</h3>
+                <button class="btn-add-contact" onclick="openAddContactModal()" style="background:var(--primary); border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; font-size:16px; font-weight:700; transition:transform 0.15s;" title="Agregar Contacto">+</button>
+            </div>
             <div class="contacts-search">
                 <span class="search-icon">🔍</span>
                 <input type="text" id="contactSearch" placeholder="Buscar persona..." oninput="filterContacts(this.value)">
+            </div>
+        </div>
+
+        <!-- Solicitudes Pendientes -->
+        <div class="pending-requests-section" id="pendingRequestsSection" style="display: none;">
+            <div class="pending-requests-header" onclick="togglePendingRequests()" style="padding:10px 16px; background:rgba(255, 69, 0, 0.1); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:12px; font-weight:600; color:var(--text);">
+                <span>📩 Solicitudes pendientes (<span id="pendingCount">0</span>)</span>
+                <span id="pendingToggleIcon" style="transition:transform 0.2s; display:inline-block;">▼</span>
+            </div>
+            <div class="pending-requests-list" id="pendingRequestsList" style="display: none; background:var(--surface); border-bottom:1px solid var(--border); max-height:200px; overflow-y:auto;">
+                <!-- Se cargará dinámicamente -->
             </div>
         </div>
 
@@ -528,13 +688,32 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Agregar Contacto -->
+<div class="chat-modal" id="addContactModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(4px);">
+    <div class="chat-modal-content" style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); width:450px; max-width:90%; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.5); display:flex; flex-direction:column; animation: scaleUp 0.25s ease;">
+        <div class="chat-modal-header" style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:15px; font-weight:700; color:var(--text);">Agregar Contacto</h3>
+            <button class="modal-close" onclick="closeAddContactModal()" style="background:transparent; border:none; color:var(--muted); font-size:24px; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+        <div class="chat-modal-body" style="padding:20px;">
+            <div class="contacts-search" style="margin-bottom:15px; position:relative;">
+                <span class="search-icon" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--muted);">🔍</span>
+                <input type="text" id="modalSearchInput" placeholder="Buscar por nombre o correo..." oninput="searchUsersToContact(this.value)" style="width:100%; padding:9px 14px 9px 36px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; font-family:'Poppins',sans-serif; box-sizing:border-box;">
+            </div>
+            <div class="search-results" id="modalSearchResults" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                <div class="results-empty" style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">Escribe el nombre o correo de la persona que deseas agregar.</div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
 /* ═══════════════════════════════════════════════════
    ESTADO GLOBAL
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 const MY_ID = {{ auth()->id() }};
 const ROLE_NAMES = { 1:'Usuario', 2:'Administrador', 3:'Nutricionista', 4:'Entrenador' };
 const ROLE_ICONS = { 1:'👤', 2:'🛡️', 3:'🥗', 4:'💪' };
@@ -546,46 +725,44 @@ let currentSearchQuery = '';
 
 let currentContact = null;
 let lastMsgTimestamp = null;   // Timestamp del último mensaje visto (para polling eficiente)
+let lastMsgId = null;          // ID del último mensaje visto
 let pollTimer = null;
 let unreadByContact = {};      // { contact_id: count }
 let isLoading = false;
 
 /* ═══════════════════════════════════════════════════
    INIT
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
     // Cargar contactos vía API para obtener unread_count actualizado
     loadConversations();
+    loadPendingRequests();
 
-    // Polling global de badges (cada 8s) cuando no hay chat abierto
+    // Polling global de badges y solicitudes (cada 8s) cuando no hay chat abierto
     setInterval(() => {
-        if (!currentContact) loadConversations();
+        if (!currentContact) {
+            loadConversations();
+        }
+        loadPendingRequests();
     }, 8000);
 });
 
 /* ═══════════════════════════════════════════════════
    CARGAR CONVERSACIONES (API)
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 async function loadConversations() {
     try {
         const res = await fetch('/api/messages/conversations');
         const data = await res.json();
         if (!data.success) return;
 
-        // Actualizar unreadByContact
         unreadByContact = {};
-        data.data.forEach(c => {
+        allContacts = data.data || [];
+        allContacts.forEach(c => {
             unreadByContact[c.id] = c.unread_count || 0;
-            // Actualizar last_message en allContacts
-            const existing = allContacts.find(x => x.id === c.id);
-            if (existing) {
-                existing.last_message = c.last_message;
-                existing.last_message_time = c.last_message_time;
-                existing.unread_count = c.unread_count;
-            }
         });
 
-        renderContacts();
+        applyFilters();
     } catch(e) {
         console.warn('No se pudo cargar conversaciones:', e);
     }
@@ -593,7 +770,7 @@ async function loadConversations() {
 
 /* ═══════════════════════════════════════════════════
    FILTROS Y BÚSQUEDA
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 function setRoleFilter(role, btn) {
     currentRoleFilter = role;
     document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -617,7 +794,7 @@ function applyFilters() {
 
 /* ═══════════════════════════════════════════════════
    RENDER LISTA DE CONTACTOS
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 function renderContacts() {
     const ul = document.getElementById('contactsList');
 
@@ -667,7 +844,7 @@ function renderContacts() {
 
 /* ═══════════════════════════════════════════════════
    ABRIR CHAT
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 async function openChat(contactId) {
     currentContact = allContacts.find(c => c.id === contactId);
     if (!currentContact) return;
@@ -695,6 +872,7 @@ async function openChat(contactId) {
     // Limpiar polling anterior
     stopPolling();
     lastMsgTimestamp = null;
+    lastMsgId = null;
 
     // Cargar historial completo inicial
     await loadThread(contactId);
@@ -713,7 +891,7 @@ async function openChat(contactId) {
 
 /* ═══════════════════════════════════════════════════
    CARGAR HILO COMPLETO (primera vez)
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 async function loadThread(contactId) {
     const container = document.getElementById('chatMessages');
     container.innerHTML = '<div class="chat-loader"><div class="dot-anim"><span></span><span></span><span></span></div></div>';
@@ -725,9 +903,10 @@ async function loadThread(contactId) {
 
         renderMessages(data.data, true);
 
-        // Guardar timestamp del último mensaje para polling
+        // Guardar timestamp y ID del último mensaje para polling
         if (data.data.length > 0) {
             lastMsgTimestamp = data.data[data.data.length - 1].created_at;
+            lastMsgId = data.data[data.data.length - 1].id;
         }
     } catch(e) {
         container.innerHTML = '<div class="chat-loader" style="color:var(--primary)">Error al cargar mensajes.</div>';
@@ -736,7 +915,7 @@ async function loadThread(contactId) {
 
 /* ═══════════════════════════════════════════════════
    POLLING EFICIENTE (solo mensajes nuevos)
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 function startPolling(contactId) {
     pollTimer = setInterval(() => doPoll(contactId), 1500);
 }
@@ -748,7 +927,10 @@ function stopPolling() {
 async function doPoll(contactId) {
     if (document.hidden) return; // No hacer polling si la tab está oculta
 
-    const afterParam = lastMsgTimestamp ? `&after=${encodeURIComponent(lastMsgTimestamp)}` : '';
+    const afterParam = lastMsgId 
+        ? `&after_id=${lastMsgId}` 
+        : (lastMsgTimestamp ? `&after=${encodeURIComponent(lastMsgTimestamp)}` : '');
+
     try {
         const res  = await fetch(`/api/messages/poll?with_user_id=${contactId}${afterParam}`);
         const data = await res.json();
@@ -760,6 +942,7 @@ async function doPoll(contactId) {
         // Si hay mensajes nuevos, agregarlos al DOM
         if (data.messages && data.messages.length > 0) {
             appendMessages(data.messages);
+            lastMsgId = data.messages[data.messages.length - 1].id;
             lastMsgTimestamp = data.messages[data.messages.length - 1].created_at;
         }
 
@@ -790,7 +973,7 @@ async function doPoll(contactId) {
 
 /* ═══════════════════════════════════════════════════
    RENDER DE MENSAJES
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 function renderMessages(messages, scrollToBottom = true) {
     const container = document.getElementById('chatMessages');
     container.innerHTML = '';
@@ -806,7 +989,11 @@ function renderMessages(messages, scrollToBottom = true) {
             container.appendChild(sep);
             lastDate = msgDate;
         }
-        container.appendChild(makeBubble(m));
+        
+        // Evitar duplicados
+        if (!container.querySelector(`.msg-bubble[data-id="${m.id}"]`)) {
+            container.appendChild(makeBubble(m));
+        }
     });
 
     if (scrollToBottom) container.scrollTop = container.scrollHeight;
@@ -817,6 +1004,11 @@ function appendMessages(messages) {
     const atBottom  = container.scrollHeight - container.scrollTop <= container.clientHeight + 80;
 
     messages.forEach(m => {
+        // Evitar duplicados
+        if (container.querySelector(`.msg-bubble[data-id="${m.id}"]`)) {
+            return;
+        }
+
         // Quitar temp bubble si el mensaje es mío
         if (m.sender_id === MY_ID) {
             const temps = container.querySelectorAll('.msg-bubble.msg-me.sending');
@@ -831,6 +1023,224 @@ function appendMessages(messages) {
     const last = messages[messages.length - 1];
     const c = allContacts.find(x => x.id === currentContact?.id);
     if (c) { c.last_message = last.message; c.last_message_time = last.created_at; }
+}
+
+async function loadPendingRequests() {
+    try {
+        const res = await fetch('/api/messages/requests/pending');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const container = document.getElementById('pendingRequestsList');
+        const section = document.getElementById('pendingRequestsSection');
+        const countSpan = document.getElementById('pendingCount');
+
+        const requests = data.data || [];
+        countSpan.textContent = requests.length;
+
+        if (requests.length > 0) {
+            section.style.display = 'block';
+            container.innerHTML = requests.map(r => {
+                const sender = r.sender;
+                const initials = sender.name.charAt(0).toUpperCase();
+                const avatarHtml = sender.profile_photo
+                    ? `<img src="${sender.profile_photo}" alt="${escHtml(sender.name)}" onerror="this.parentElement.textContent='${initials}'">`
+                    : initials;
+
+                return `
+                <div class="pending-request-item" id="req-item-${r.id}">
+                    <div class="search-result-avatar" style="width:30px;height:30px;font-size:12px;">${avatarHtml}</div>
+                    <div class="pending-request-info">
+                        <div class="pending-request-name">${escHtml(sender.name)}</div>
+                        <div class="pending-request-email">${ROLE_ICONS[sender.role]} ${ROLE_NAMES[sender.role]}</div>
+                    </div>
+                    <div class="pending-request-actions">
+                        <button class="btn-action-accept" onclick="acceptContactRequest(${r.id})">✓</button>
+                        <button class="btn-action-decline" onclick="declineContactRequest(${r.id})">×</button>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            section.style.display = 'none';
+            container.style.display = 'none';
+            document.getElementById('pendingToggleIcon').style.transform = '';
+            isPendingExpanded = false;
+        }
+    } catch (e) {
+        console.warn('Error al cargar solicitudes pendientes:', e);
+    }
+}
+
+let isPendingExpanded = false;
+function togglePendingRequests() {
+    const list = document.getElementById('pendingRequestsList');
+    const icon = document.getElementById('pendingToggleIcon');
+    isPendingExpanded = !isPendingExpanded;
+    if (isPendingExpanded) {
+        list.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        list.style.display = 'none';
+        icon.style.transform = '';
+    }
+}
+
+async function acceptContactRequest(reqId) {
+    try {
+        const res = await fetch(`/api/messages/requests/${reqId}/accept`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
+        const data = await res.json();
+        if (data.success) {
+            const item = document.getElementById(`req-item-${reqId}`);
+            if (item) item.remove();
+            
+            await loadPendingRequests();
+            await loadConversations();
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error al aceptar solicitud.');
+    }
+}
+
+async function declineContactRequest(reqId) {
+    try {
+        const res = await fetch(`/api/messages/requests/${reqId}/decline`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        });
+        const data = await res.json();
+        if (data.success) {
+            const item = document.getElementById(`req-item-${reqId}`);
+            if (item) item.remove();
+            await loadPendingRequests();
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error al declinar solicitud.');
+    }
+}
+
+function openAddContactModal() {
+    const modal = document.getElementById('addContactModal');
+    modal.style.display = 'flex';
+    document.getElementById('modalSearchInput').value = '';
+    document.getElementById('modalSearchResults').innerHTML = '<div class="results-empty" style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">Escribe el nombre o correo de la persona que deseas agregar.</div>';
+    document.getElementById('modalSearchInput').focus();
+}
+
+function closeAddContactModal() {
+    document.getElementById('addContactModal').style.display = 'none';
+}
+
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('addContactModal');
+    if (e.target === modal) {
+        closeAddContactModal();
+    }
+});
+
+let searchTimeout = null;
+function searchUsersToContact(query) {
+    clearTimeout(searchTimeout);
+    const container = document.getElementById('modalSearchResults');
+    
+    if (!query.trim()) {
+        container.innerHTML = '<div class="results-empty" style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">Escribe el nombre o correo de la persona que deseas agregar.</div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="chat-loader" style="justify-content:center;"><div class="dot-anim"><span></span><span></span><span></span></div></div>';
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const res = await fetch(`/api/messages/contacts/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (!data.success) {
+                container.innerHTML = '<div class="results-empty" style="text-align:center; color:var(--primary); font-size:12px; padding:20px;">Error al buscar usuarios.</div>';
+                return;
+            }
+
+            const users = data.data || [];
+            if (users.length === 0) {
+                container.innerHTML = '<div class="results-empty" style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">No se encontraron usuarios activos con ese nombre o correo.</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(u => {
+                const initials = u.name.charAt(0).toUpperCase();
+                const avatarHtml = u.profile_photo
+                    ? `<img src="${u.profile_photo}" alt="${escHtml(u.name)}" onerror="this.parentElement.textContent='${initials}'">`
+                    : initials;
+
+                let actionBtn = '';
+                if (u.request_status === 'accepted') {
+                    actionBtn = '<button class="btn-request-send" disabled>Ya es contacto</button>';
+                } else if (u.request_status === 'pending') {
+                    if (u.is_sender) {
+                        actionBtn = '<button class="btn-request-send" disabled style="background:var(--surface); border:1px solid var(--border); color:var(--muted);">Pendiente</button>';
+                    } else {
+                        actionBtn = `<button class="btn-request-send" onclick="acceptContactRequest(${u.request_id}).then(() => { searchUsersToContact('${query.replace(/'/g, "\\'")}'); })" style="background:#48bb78;">Aceptar</button>`;
+                    }
+                } else {
+                    actionBtn = `<button class="btn-request-send" id="btn-add-${u.id}" onclick="sendContactRequest(${u.id})">Agregar</button>`;
+                }
+
+                return `
+                <div class="search-result-item">
+                    <div class="search-result-avatar">${avatarHtml}</div>
+                    <div class="search-result-info">
+                        <div class="search-result-name">${escHtml(u.name)}</div>
+                        <div class="search-result-role">${ROLE_ICONS[u.role] || ''} ${ROLE_NAMES[u.role] || ''}</div>
+                    </div>
+                    <div class="search-result-actions">
+                        ${actionBtn}
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch (e) {
+            container.innerHTML = '<div class="results-empty" style="text-align:center; color:var(--primary); font-size:12px; padding:20px;">Error de red al buscar.</div>';
+        }
+    }, 400);
+}
+
+async function sendContactRequest(userId) {
+    const btn = document.getElementById(`btn-add-${userId}`);
+    if (btn) btn.disabled = true;
+    try {
+        const res = await fetch('/api/messages/requests/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({ receiver_id: userId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            if (btn) {
+                btn.textContent = 'Enviado';
+                btn.style.background = 'var(--surface)';
+                btn.style.border = '1px solid var(--border)';
+                btn.style.color = 'var(--muted)';
+            }
+        } else {
+            alert(data.message || 'Error al enviar solicitud.');
+            if (btn) btn.disabled = false;
+        }
+    } catch (e) {
+        alert('Error al enviar solicitud.');
+        if (btn) btn.disabled = false;
+    }
 }
 
 function makeBubble(m) {
@@ -851,7 +1261,7 @@ function makeBubble(m) {
 
 /* ═══════════════════════════════════════════════════
    ENVIAR MENSAJE
-═══════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════ */
 async function sendMessage() {
     const input = document.getElementById('msgInput');
     const text  = input.value.trim();
@@ -887,8 +1297,9 @@ async function sendMessage() {
             container.appendChild(makeBubble(data.message));
             container.scrollTop = container.scrollHeight;
 
-            // Actualizar timestamp de polling
+            // Actualizar timestamp y ID de polling
             lastMsgTimestamp = data.message.created_at;
+            lastMsgId = data.message.id;
 
             // Actualizar preview
             const c = allContacts.find(x => x.id === currentContact.id);

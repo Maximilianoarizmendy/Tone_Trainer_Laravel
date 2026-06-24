@@ -64,9 +64,23 @@ class DashboardController extends Controller
     public function messages()
     {
         $user = auth()->user();
+        $myId = $user->id;
 
-        // Todos los usuarios activos del gym excepto el propio
-        $contacts = User::where('id', '!=', $user->id)
+        // Obtener IDs de contactos aceptados
+        $contactIds = DB::table('contact_requests')
+            ->where('status', 'accepted')
+            ->where(function($q) use ($myId) {
+                $q->where('sender_id', $myId)
+                  ->orWhere('receiver_id', $myId);
+            })
+            ->get()
+            ->map(function($row) use ($myId) {
+                return $row->sender_id == $myId ? $row->receiver_id : $row->sender_id;
+            })
+            ->toArray();
+
+        // Todos los usuarios aceptados como contactos
+        $contacts = User::whereIn('id', $contactIds)
             ->where('active', true)
             ->orderBy('role')
             ->orderBy('name')

@@ -53,24 +53,6 @@
     <div class="target-badge"><div class="target-val" id="totalFat">0g</div><div class="target-lbl">Grasas</div></div>
 </div>
 
-<div class="section-header" style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>📅 Plan de la Semana</h2>
-    @if($user->isAdmin() || $user->isNutritionist())
-        <div style="background:var(--surface); padding:8px 12px; border-radius:8px; border:1px solid #333; display:flex; align-items:center; gap:10px;">
-            <label style="font-size:13px; color:var(--muted); margin:0;">Seleccionar Paciente:</label>
-            <select onchange="window.location.href='?user_id=' + this.value" style="padding:6px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; font-size:13px;">
-                <option value="{{ $user->id }}">Mi propio plan</option>
-                @if(isset($patients))
-                    @foreach($patients as $patient)
-                        <option value="{{ $patient->id }}" {{ request()->query('user_id') == $patient->id ? 'selected' : '' }}>
-                            {{ $patient->name }}
-                        </option>
-                    @endforeach
-                @endif
-            </select>
-        </div>
-    @endif
-</div>
 
 {{-- Formulario agregar (Admin/Nutri) --}}
 @if($user->isAdmin() || $user->isNutritionist())

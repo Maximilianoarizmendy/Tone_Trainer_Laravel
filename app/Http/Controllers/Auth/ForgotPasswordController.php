@@ -46,11 +46,7 @@ class ForgotPasswordController extends Controller
         $resetUrl = route('password.reset', ['token' => $token]);
 
         // Enviar email
-        try {
-            Mail::to($user->email)->send(new PasswordResetMail($user, $resetUrl));
-        } catch (\Exception $e) {
-            \Log::error('Error enviando reset email: ' . $e->getMessage());
-        }
+        Mail::to($user->email)->send(new PasswordResetMail($user, $resetUrl));
 
         return back()->with('status', 'Si ese correo existe, recibirás un enlace de recuperación.');
     }

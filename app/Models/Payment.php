@@ -43,6 +43,14 @@ class Payment extends Model
     }
 
     /**
+     * Relación con la membresía asociada al pago.
+     */
+    public function membership()
+    {
+        return $this->belongsTo(\App\Models\Membership::class);
+    }
+
+    /**
      * Obtener monto formateado (usa amount_cents si existe, sino amount).
      */
     public function getFormattedAmountAttribute(): string

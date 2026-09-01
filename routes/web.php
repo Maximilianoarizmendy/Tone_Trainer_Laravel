@@ -96,7 +96,7 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
 });
 
 // === STRIPE ===
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:1'])->group(function () {
     Route::post('/stripe/create-checkout-session', [StripeController::class, 'createCheckoutSession'])
         ->name('stripe.create.session');
 });
@@ -106,6 +106,7 @@ Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook'])->name
 // === MERCADO PAGO ===
 Route::middleware('auth')->group(function () {
     Route::post('/mercadopago/create-preference', [MercadoPagoController::class, 'createPreference'])
+        ->middleware('role:1')
         ->name('mercadopago.create.preference');
     Route::get('/mercadopago/callback', [MercadoPagoController::class, 'paymentCallback'])
         ->name('mercadopago.callback');

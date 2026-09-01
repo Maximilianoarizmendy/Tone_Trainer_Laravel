@@ -17,6 +17,14 @@ class StripeController extends Controller
      */
     public function createCheckoutSession(Request $request)
     {
+        $user = auth()->user();
+
+        if (!$user || !$user->isUser()) {
+            return response()->json([
+                'message' => 'Los administradores, entrenadores y nutricionistas no pueden adquirir membresías.'
+            ], 403);
+        }
+
         Stripe::setApiKey(config('stripe.secret'));
 
         $session = Session::create([

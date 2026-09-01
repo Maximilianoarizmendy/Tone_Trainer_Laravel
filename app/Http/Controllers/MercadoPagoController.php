@@ -24,6 +24,14 @@ class MercadoPagoController extends Controller
         ]);
 
         $user = auth()->user();
+
+        if (!$user->isUser()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Los administradores, entrenadores y nutricionistas no pueden adquirir membresías.'
+            ], 403);
+        }
+
         $membership = Membership::findOrFail($request->membership_id);
 
         try {

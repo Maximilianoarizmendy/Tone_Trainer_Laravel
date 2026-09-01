@@ -289,16 +289,19 @@
 
 <div class="pay-header">
     <div>
-        <h2><i class="bi bi-bar-chart-line-fill"></i> Resumen de Ingresos</h2>
-        <p>Panel de control de todos los pagos registrados en la plataforma.</p>
+        <h2><i class="bi bi-bar-chart-line-fill"></i> Reportes de Compras y Membresías</h2>
+        <p>Panel de control para consultar las ventas, ingresos totales e historial de compras de todos los clientes.</p>
     </div>
 </div>
 
 @php
     $totalPagos      = $payments->total();
-    $totalMonto      = \App\Models\Payment::sum('amount') + (\App\Models\Payment::sum('amount_cents') / 100);
-    $pagosExitosos   = \App\Models\Payment::whereIn('status', ['paid', 'completed'])->count();
-    $pagosPendientes = \App\Models\Payment::where('status', 'pending')->count();
+    $allPayments     = \App\Models\Payment::all();
+    $totalMonto      = $allPayments->whereIn('status', ['paid', 'completed'])->sum(function($p) {
+        return $p->amount_cents ? ($p->amount_cents / 100) : ($p->amount ?? 0);
+    });
+    $pagosExitosos   = $allPayments->whereIn('status', ['paid', 'completed'])->count();
+    $pagosPendientes = $allPayments->where('status', 'pending')->count();
 @endphp
 <div class="payments-stats">
     <div class="stat-card">
@@ -307,7 +310,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
-        <div><div class="stat-value">${{ number_format($totalMonto, 0) }}</div><div class="stat-label">Total recaudado (COP)</div></div>
+        <div><div class="stat-value">${{ number_format($totalMonto, 0, ',', '.') }}</div><div class="stat-label">Total recaudado (COP)</div></div>
     </div>
     <div class="stat-card">
         <div class="stat-icon orange"><i class="bi bi-check2-circle"></i></div>
@@ -463,8 +466,8 @@
 {{-- ═══════════════════════════════════════════════════════ --}}
 {{-- HISTORIAL DE PAGOS (común para todos)                    --}}
 {{-- ═══════════════════════════════════════════════════════ --}}
-<div class="section-title" style="margin-top: 8px;"><i class="bi bi-clock-history"></i> Historial de Pagos</div>
-<p class="section-subtitle">Registro de todas tus transacciones realizadas en la plataforma.</p>
+<div class="section-title" style="margin-top: 8px;"><i class="bi bi-clock-history"></i> {{ auth()->user()->isAdmin() ? 'Reporte Detallado de Compras' : 'Historial de Pagos' }}</div>
+<p class="section-subtitle">{{ auth()->user()->isAdmin() ? 'Registro de todas las transacciones realizadas por los usuarios en la plataforma.' : 'Registro de todas tus transacciones realizadas en la plataforma.' }}</p>
 
 @if($payments->count())
     <div class="payments-table-wrap">
@@ -473,6 +476,7 @@
                 <tr>
                     <th>#</th>
                     @if(auth()->user()->isAdmin())<th>Usuario</th>@endif
+                    <th>Membresía</th>
                     <th>Monto</th>
                     <th>Moneda</th>
                     <th>Estado</th>
@@ -485,8 +489,18 @@
                     <tr>
                         <td style="color: var(--muted); font-size: 12px;">{{ $payment->id }}</td>
                         @if(auth()->user()->isAdmin())
-                        <td>{{ $payment->user->name ?? ($payment->customer_id ?? '—') }}</td>
+                        <td>
+                            <div style="font-weight:600; color:#fff;">{{ $payment->user->name ?? '—' }}</div>
+                            @if($payment->user && $payment->user->email)
+                            <div style="font-size:11px; color:var(--muted);">{{ $payment->user->email }}</div>
+                            @endif
+                        </td>
                         @endif
+                        <td>
+                            <span style="font-weight: 600; color: #fff;">
+                                {{ $payment->membership->name ?? 'Plan de Membresía' }}
+                            </span>
+                        </td>
                         <td style="font-weight: 700; color: #fff;">
                             @if($payment->amount_cents)
                                 ${{ number_format($payment->amount_cents / 100, 0, ',', '.') }}

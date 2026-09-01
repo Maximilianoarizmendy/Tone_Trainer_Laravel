@@ -97,7 +97,7 @@ class DashboardController extends Controller
     public function payments()
     {
         $user = auth()->user();
-        $query = Payment::orderBy('created_at', 'desc');
+        $query = Payment::with(['user', 'membership'])->orderBy('created_at', 'desc');
 
         if ($user->role != User::ROLE_ADMIN) {
             $query->where('user_id', $user->id);

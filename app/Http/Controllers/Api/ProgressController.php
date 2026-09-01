@@ -43,18 +43,28 @@ class ProgressController extends Controller
                 return [
                     'id'             => $p->id,
                     'weight'         => $p->weight,
+                    'height'         => $p->height,
                     'body_fat'       => $p->body_fat,
                     'muscle_mass'    => $p->muscle_mass,
                     'bmi'            => $p->bmi,
                     'water_intake'   => $p->water_intake,
                     'protein_intake' => $p->protein_intake,
-                    'is_validated'   => $p->is_validated,
+                    'notes'          => $p->notes,
+                    'is_validated'   => (bool) $p->is_validated,
                     'trainer_comment'=> $p->trainer_comment,
                     'date'           => $p->created_at->format('Y-m-d H:i:s'),
                 ];
             });
 
-        return response()->json(['success' => true, 'data' => $metrics]);
+        return response()->json([
+            'success' => true,
+            'user'    => [
+                'id'     => $targetUser->id,
+                'name'   => $targetUser->name,
+                'height' => $targetUser->height,
+            ],
+            'data'    => $metrics
+        ]);
     }
 
     public function compare(Request $request): JsonResponse
@@ -79,25 +89,43 @@ class ProgressController extends Controller
         $targetUser = $this->resolveTargetUser($request);
 
         $data = $request->validate([
-            'weight'  => 'required|numeric|min:0',
-            'fat'     => 'required|numeric|min:0',
-            'muscle'  => 'required|numeric|min:0',
-            'bmi'     => 'required|numeric|min:0',
-            'water'   => 'required|numeric|min:0',
-            'protein' => 'required|numeric|min:0',
+            'weight'  => 'required|numeric|min:1|max:500',
+            'fat'     => 'nullable|numeric|min:0|max:100',
+            'muscle'  => 'nullable|numeric|min:0|max:100',
+            'bmi'     => 'nullable|numeric|min:0|max:100',
+            'water'   => 'nullable|numeric|min:0|max:50',
+            'protein' => 'nullable|numeric|min:0|max:1000',
+            'height'  => 'nullable|numeric|min:0|max:300',
         ]);
 
-        Progress::create([
+        $height = !empty($data['height']) ? (float)$data['height'] : ($targetUser->height ? (float)$targetUser->height : null);
+        $bmi    = !empty($data['bmi']) ? (float)$data['bmi'] : null;
+
+        if (!$bmi && !empty($data['weight']) && $height && $height > 0) {
+            $heightMeters = $height > 3 ? ($height / 100) : $height;
+            if ($heightMeters > 0) {
+                $bmi = round((float)$data['weight'] / ($heightMeters * $heightMeters), 2);
+            }
+        }
+
+        $progress = Progress::create([
             'user_id'        => $targetUser->id,
             'weight'         => $data['weight'],
-            'body_fat'       => $data['fat'],
-            'muscle_mass'    => $data['muscle'],
-            'bmi'            => $data['bmi'],
-            'water_intake'   => $data['water'],
-            'protein_intake' => $data['protein'],
+            'height'         => $height,
+            'body_fat'       => isset($data['fat']) && $data['fat'] !== '' ? $data['fat'] : null,
+            'muscle_mass'    => isset($data['muscle']) && $data['muscle'] !== '' ? $data['muscle'] : null,
+            'bmi'            => $bmi,
+            'water_intake'   => isset($data['water']) && $data['water'] !== '' ? $data['water'] : null,
+            'protein_intake' => isset($data['protein']) && $data['protein'] !== '' ? $data['protein'] : null,
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Datos guardados correctamente.']);
+        $targetUser->update([
+            'weight' => $data['weight'],
+            'height' => $height ?? $targetUser->height,
+            'imc'    => $bmi ?? $targetUser->imc,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Métricas registradas correctamente.', 'data' => $progress]);
     }
 
     public function validateProgress(Request $request, int $id): JsonResponse

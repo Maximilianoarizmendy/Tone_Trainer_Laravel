@@ -37,7 +37,7 @@
         <div class="profile-sidebar-card">
             <div class="profile-photo-wrapper">
                 @if($user->profile_photo)
-                    <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Foto" class="profile-photo" id="profileImg">
+                    <img src="{{ str_starts_with($user->profile_photo, 'http') ? $user->profile_photo : asset('storage/' . $user->profile_photo) }}" alt="Foto" class="profile-photo" id="profileImg">
                 @else
                     <div class="profile-initials" id="profileInitials">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
                 @endif

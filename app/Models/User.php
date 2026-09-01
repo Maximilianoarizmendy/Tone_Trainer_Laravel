@@ -105,6 +105,17 @@ class User extends Authenticatable
         };
     }
 
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (!$this->profile_photo) {
+            return null;
+        }
+        if (str_starts_with($this->profile_photo, 'http://') || str_starts_with($this->profile_photo, 'https://')) {
+            return $this->profile_photo;
+        }
+        return asset('storage/' . $this->profile_photo);
+    }
+
     // Solo usuarios activos pueden autenticarse (manejado en attempt())
 
     // ── Scopes ───────────────────────────────────────────────────

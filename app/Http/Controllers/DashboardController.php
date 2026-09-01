@@ -51,10 +51,19 @@ class DashboardController extends Controller
         return view('dashboard.nutrition', compact('user', 'patients'));
     }
 
-    public function progress()
+    public function progress(Request $request)
     {
         $user = auth()->user();
-        return view('dashboard.progress', compact('user'));
+        $targetUser = $user;
+
+        if ($request->has('user_id') && $user->isStaff()) {
+            $found = User::find((int) $request->user_id);
+            if ($found) {
+                $targetUser = $found;
+            }
+        }
+
+        return view('dashboard.progress', compact('user', 'targetUser'));
     }
 
     public function goals()
@@ -86,7 +95,16 @@ class DashboardController extends Controller
             ->where('active', true)
             ->orderBy('role')
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'role', 'profile_photo']);
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'id'            => $u->id,
+                    'name'          => $u->name,
+                    'email'         => $u->email,
+                    'role'          => $u->role,
+                    'profile_photo' => $u->profile_photo_url,
+                ];
+            });
 
         return view('dashboard.messages', compact('user', 'contacts'));
     }

@@ -1,4 +1,11 @@
 <?php return array (
+  'cloudinary-labs/cloudinary-laravel' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'CloudinaryLabs\\CloudinaryLaravel\\CloudinaryServiceProvider',
+    ),
+  ),
   'laravel/pail' => 
   array (
     'providers' => 
@@ -39,6 +46,13 @@
     'providers' => 
     array (
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    ),
+  ),
+  'resend/resend-laravel' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Resend\\Laravel\\ResendServiceProvider',
     ),
   ),
 );

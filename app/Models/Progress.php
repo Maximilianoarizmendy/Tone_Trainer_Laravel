@@ -18,6 +18,7 @@ class Progress extends Model
     protected $fillable = [
         'user_id', 'weight', 'height', 'body_fat', 'muscle_mass',
         'bmi', 'water_intake', 'protein_intake', 'notes',
+        'is_validated', 'trainer_comment',
     ];
 
     protected $casts = [

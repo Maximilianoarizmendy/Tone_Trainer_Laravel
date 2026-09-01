@@ -34,22 +34,28 @@ class ProfilePhotoController extends Controller
 
         $file = $request->file('profile_photo');
 
-        $filename = 'user_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        // Intentar subir a Cloudinary
+        $cloudinaryService = new \App\Services\CloudinaryService();
+        $cloudinaryUrl = $cloudinaryService->uploadFile($file, 'profile_photos');
 
-        $path = $file->storeAs(
-            'uploads/profile_photos',
-            $filename,
-            'public'
-        );
+        if ($cloudinaryUrl) {
+            $photoPath = $cloudinaryUrl;
+        } else {
+            // Fallback a almacenamiento local si Cloudinary no responde
+            $filename = 'user_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $photoPath = $file->storeAs('uploads/profile_photos', $filename, 'public');
+        }
 
-        $user->profile_photo = $path;
+        $user->profile_photo = $photoPath;
         $user->save();
 
+        $photoUrl = str_starts_with($photoPath, 'http') ? $photoPath : asset('storage/' . $photoPath);
+
         return response()->json([
-            'success' => true,
-            'message' => 'Foto actualizada correctamente.',
-            'profile_photo' => $path,
-            'profile_photo_url' => asset('storage/' . $path)
+            'success'           => true,
+            'message'           => 'Foto de perfil actualizada correctamente.',
+            'profile_photo'     => $photoPath,
+            'profile_photo_url' => $photoUrl,
         ]);
     }
 }

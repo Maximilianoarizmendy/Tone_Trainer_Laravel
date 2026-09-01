@@ -68,7 +68,7 @@
     <div class="user-card">
         <div class="user-header">
             @if($u->profile_photo)
-                <img src="{{ asset('storage/' . $u->profile_photo) }}" class="user-avatar-img" alt="Foto de {{ $u->name }}">
+                <img src="{{ str_starts_with($u->profile_photo, 'http') ? $u->profile_photo : asset('storage/' . $u->profile_photo) }}" class="user-avatar-img" alt="Foto de {{ $u->name }}">
             @else
                 <div class="user-avatar">{{ strtoupper(substr($u->name, 0, 1)) }}</div>
             @endif

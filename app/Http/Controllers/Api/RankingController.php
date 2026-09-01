@@ -28,7 +28,7 @@ class RankingController extends Controller
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'profile_photo' => $user->profile_photo,
+                    'profile_photo' => $user->profile_photo_url,
                     'score' => $score,
                     'badges' => $user->points_from_badges,
                 ];

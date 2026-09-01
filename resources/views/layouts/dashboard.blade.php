@@ -145,7 +145,7 @@
     {{-- Usuario --}}
     <div class="sidebar-user">
         @if(auth()->user()->profile_photo)
-            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}"
+            <img src="{{ str_starts_with(auth()->user()->profile_photo, 'http') ? auth()->user()->profile_photo : asset('storage/' . auth()->user()->profile_photo) }}"
                  alt="Foto" class="sidebar-avatar">
         @else
             <div class="sidebar-avatar-placeholder">

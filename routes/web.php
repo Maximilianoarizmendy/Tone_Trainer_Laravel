@@ -12,11 +12,45 @@ use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\NotificationController;
 
-// === GOOGLE SEARCH CONSOLE VERIFICATION ===
+// === SEO: GOOGLE VERIFICATION, ROBOTS & SITEMAP ===
 Route::get('/google6421225e405af025.html', function () {
     return response('google-site-verification: google6421225e405af025.html')
         ->header('Content-Type', 'text/html');
 });
+
+Route::get('/robots.txt', function () {
+    $content = "User-agent: *\nAllow: /\n\n";
+    $content .= "Disallow: /dashboard\nDisallow: /login\nDisallow: /register\n";
+    $content .= "Disallow: /forgot-password\nDisallow: /reset-password\nDisallow: /logout\n";
+    $content .= "Disallow: /stripe/\nDisallow: /mercadopago/\n\n";
+    $content .= "Sitemap: https://tone-trainer-laravel.onrender.com/sitemap.xml\n";
+    return response($content)->header('Content-Type', 'text/plain');
+});
+
+Route::get('/sitemap.xml', function () {
+    $baseUrl = 'https://tone-trainer-laravel.onrender.com';
+    $urls = [
+        ['loc' => $baseUrl . '/',           'priority' => '1.0', 'changefreq' => 'weekly'],
+        ['loc' => $baseUrl . '/login',       'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => $baseUrl . '/register',    'priority' => '0.8', 'changefreq' => 'monthly'],
+        ['loc' => $baseUrl . '/forgot-password', 'priority' => '0.3', 'changefreq' => 'yearly'],
+    ];
+
+    $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($urls as $url) {
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>{$url['loc']}</loc>\n";
+        $xml .= "    <changefreq>{$url['changefreq']}</changefreq>\n";
+        $xml .= "    <priority>{$url['priority']}</priority>\n";
+        $xml .= "    <lastmod>" . now()->toDateString() . "</lastmod>\n";
+        $xml .= "  </url>\n";
+    }
+    $xml .= '</urlset>';
+
+    return response($xml)->header('Content-Type', 'application/xml');
+});
+
 
 // === LANDING PAGE ===
 Route::get('/', [LandingController::class, 'index'])->name('home');

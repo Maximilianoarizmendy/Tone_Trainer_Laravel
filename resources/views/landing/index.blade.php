@@ -7,6 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta name="description" content="Tone Trainer: plataforma integral de entrenamiento personalizado, nutrición profesional y seguimiento del progreso.">
     <meta name="theme-color" content="#FF4500">
+    <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" type="image/png" href="{{ asset('img/logo-removebg-preview.png') }}">
     {{-- Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&family=Teko:wght@300..700&display=swap" rel="stylesheet">

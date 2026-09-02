@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Bloquear rutas privadas
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /logout
+Disallow: /stripe/
+Disallow: /mercadopago/
+
+Sitemap: https://tone-trainer-laravel.onrender.com/sitemap.xml

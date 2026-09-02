@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
+    <meta name="google-site-verification" content="Cj9n4GBL_QvM0PD-YT19PUXnIa1N4k5XH19XpfLud4g" />
     <title>Tone Trainer - Plataforma de Bienestar | Entrenamiento y Nutrición</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta name="description" content="Tone Trainer: plataforma integral de entrenamiento personalizado, nutrición profesional y seguimiento del progreso.">

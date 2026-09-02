@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="google-site-verification" content="Cj9n4GBL_QvM0PD-YT19PUXnIa1N4k5XH19XpfLud4g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - Tone Trainer</title>

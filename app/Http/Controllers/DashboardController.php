@@ -151,11 +151,11 @@ class DashboardController extends Controller
 
         // Nuevos usuarios por mes (últimos 6 meses)
         $newUsersPerMonth = User::where('role', User::ROLE_USER)
-            ->select(DB::raw('MONTH(membership_start) as month, YEAR(membership_start) as year, COUNT(*) as total'))
+            ->select(DB::raw('EXTRACT(MONTH FROM membership_start) as month, EXTRACT(YEAR FROM membership_start) as year, COUNT(*) as total'))
             ->whereNotNull('membership_start')
             ->where('membership_start', '>=', now()->subMonths(6)->startOfMonth())
-            ->groupBy('year', 'month')
-            ->orderBy('year')->orderBy('month')
+            ->groupBy(DB::raw('EXTRACT(YEAR FROM membership_start)'), DB::raw('EXTRACT(MONTH FROM membership_start)'))
+            ->orderBy(DB::raw('EXTRACT(YEAR FROM membership_start)'))->orderBy(DB::raw('EXTRACT(MONTH FROM membership_start)'))
             ->get();
 
         return view('dashboard.reports', compact(

@@ -25,6 +25,8 @@ RUN npm run build
 RUN chmod -R 775 storage bootstrap/cache
 
 RUN php artisan config:clear
+RUN php artisan route:clear
+RUN php artisan view:clear
 
 
 EXPOSE 10000

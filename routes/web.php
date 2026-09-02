@@ -12,6 +12,12 @@ use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\NotificationController;
 
+// === GOOGLE SEARCH CONSOLE VERIFICATION ===
+Route::get('/google6421225e405af025.html', function () {
+    return response('google-site-verification: google6421225e405af025.html')
+        ->header('Content-Type', 'text/html');
+});
+
 // === LANDING PAGE ===
 Route::get('/', [LandingController::class, 'index'])->name('home');
 

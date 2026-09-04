@@ -106,9 +106,6 @@
                 <button onclick="deleteUser({{ $u->id }})" class="btn-delete"><i class="bi bi-trash"></i></button>
             @endif
 
-            @if($myRole === 'admin' || $myRole === 'nutritionist')
-                <button onclick="showNoteModal({{ $u->id }}, '{{ $u->nutritionist_notes ?? '' }}')" class="btn-note">📝 Nota</button>
-            @endif
         </div>
         
         @if($myRole === 'admin' && $u->role === 1)
@@ -267,25 +264,6 @@
     </div>
 </div>
 
-<!-- Modal Nota Nutricionista -->
-<div id="noteModal" class="modal-hidden">
-    <div class="modal-content">
-        <h3><i class="bi bi-pencil-square"></i> Nota Nutricionista</h3>
-        <form action="{{ route('dashboard.admin.nutritionist.notes') }}" method="POST" id="noteForm">
-            @csrf
-            <input type="hidden" name="target_user_id" id="noteUserId">
-            <div class="form-group">
-                <label>Nota</label>
-                <textarea id="noteTextarea" name="note" rows="5" class="form-control" placeholder="Escribe recomendaciones..."></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" onclick="closeNoteModal()" class="btn-cancel">Cancelar</button>
-                <button type="button" onclick="generateAINote()" class="btn-ai">🧠 Generar IA</button>
-                <button type="submit" class="btn-save">Guardar Nota</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {{-- ══════════ MODAL PLAN DE ENTRENAMIENTO ══════════ --}}
 <div id="trainingModal" class="modal-hidden">
@@ -425,7 +403,6 @@
 .user-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
 .btn-edit { flex: 1; padding: 8px; background: var(--surface2); border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 12px; }
 .btn-delete { padding: 8px 12px; background: rgba(239,68,68,.15); border: none; border-radius: 6px; color: #dc3545; cursor: pointer; }
-.btn-note { flex: 1; padding: 8px; background: var(--surface2); border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 12px; }
 .empty-state { text-align: center; color: var(--muted); padding: 40px; grid-column: 1 / -1; }
 .modal-hidden { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.7); z-index: 1000; align-items: center; justify-content: center; }
 .modal-content { background: var(--surface); border-radius: 12px; padding: 24px; max-width: 480px; width: 95%; max-height: 90vh; overflow-y: auto; }
@@ -437,7 +414,6 @@
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn-cancel { flex: 1; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: #fff; cursor: pointer; }
 .btn-save { flex: 1; padding: 10px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; }
-.btn-ai { flex: 1; padding: 10px; background: var(--primary); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 12px; margin-left: 4px; }
 @media (max-width: 600px) {
     .users-grid { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
@@ -555,40 +531,7 @@ function showAlert(msg, type) {
     a.innerHTML = `<div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;background:${type==='success'?'rgba(34,197,94,.12)':'rgba(239,68,68,.12)'};border:1px solid ${type==='success'?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'};color:${type==='success'?'#22c55e':'#ef4444'}">${msg}</div>`;
     setTimeout(() => a.innerHTML = '', 4000);
 }
-function showNoteModal(userId, existingNote) {
-    document.getElementById('noteUserId').value = userId;
-    document.getElementById('noteTextarea').value = existingNote;
-    document.getElementById('noteModal').style.display = 'flex';
-}
 
-function generateAINote() {
-    const userId = document.getElementById('noteUserId').value;
-    if (!userId) { showAlert('Usuario no seleccionado.', 'error'); return; }
-    fetch(`{{ route('dashboard.admin.nutritionist.ai_notes') }}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ target_user_id: userId })
-    })
-    .then(r => r.json())
-    .then(r => {
-        if (r.success) {
-            document.getElementById('noteTextarea').value = r.note;
-            showAlert('Nota generada por IA.', 'success');
-        } else {
-            showAlert(r.message || 'Error al generar la nota.', 'error');
-        }
-    })
-    .catch(() => showAlert('Error de red al contactar IA.', 'error'));
-}
-function closeNoteModal() {
-    document.getElementById('noteModal').style.display = 'none';
-    document.getElementById('noteForm').reset();
-}
 
 // ══════════ TRAINING MODAL ══════════
 let tmUserId = null;

@@ -17,10 +17,6 @@ canvas { max-height: 220px; }
 .recent-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
 .recent-table td { padding: 10px 0; border-bottom: 1px solid var(--border); color: #fff; }
 .recent-table tr:last-child td { border-bottom: none; }
-.broadcast-form { background: var(--surface); border: 1px solid rgba(250,204,21,.3); border-radius: 14px; padding: 20px; margin-top: 20px; }
-.broadcast-form h4 { color: #facc15; margin: 0 0 12px; font-size: 14px; }
-.broadcast-form textarea { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 13px; resize: vertical; min-height: 70px; font-family: inherit; box-sizing: border-box; }
-.btn-broadcast { margin-top: 10px; padding: 10px 24px; background: #facc15; color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
 @media(max-width:700px){ .reports-grid{ grid-template-columns:1fr; } }
 </style>
 @endsection
@@ -115,17 +111,6 @@ canvas { max-height: 220px; }
     </div>
 </div>
 
-{{-- COMUNICADO GENERAL (Req 33) --}}
-<div class="broadcast-form">
-    <h4>📢 Enviar Comunicado a Todos los Usuarios</h4>
-    <form action="{{ route('dashboard.admin.broadcast') }}" method="POST">
-        @csrf
-        <textarea name="message" required placeholder="Escribe aquí el comunicado para todos los usuarios (máximo 500 caracteres)..." maxlength="500"></textarea>
-        <div>
-            <button type="submit" class="btn-broadcast">📣 Enviar Comunicado</button>
-        </div>
-    </form>
-</div>
 @endsection
 
 @section('scripts')

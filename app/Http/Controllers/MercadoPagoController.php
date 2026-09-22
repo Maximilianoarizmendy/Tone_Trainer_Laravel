@@ -44,11 +44,18 @@ class MercadoPagoController extends Controller
             $preference = $client->create([
                 "items" => [
                     [
+                        "id" => (string) $membership->id,
                         "title" => "Membresía Tone Trainer: " . $membership->name,
+                        "description" => $membership->description ?: ("Membresía " . $membership->name . " en Tone Trainer por " . $membership->duration_days . " días."),
+                        "category_id" => "services",
                         "quantity" => 1,
                         "unit_price" => (float) $membership->price,
                         "currency_id" => "COP"
                     ]
+                ],
+                "payer" => [
+                    "name" => $user->name,
+                    "email" => $user->email,
                 ],
                 "back_urls" => [
                     "success" => route('mercadopago.callback'),
@@ -57,6 +64,7 @@ class MercadoPagoController extends Controller
                 ],
                 "auto_return" => "approved",
                 "external_reference" => $externalReference,
+                "notification_url" => route('mercadopago.webhook'),
             ]);
 
             $initPoint = str_starts_with(config('mercadopago.access_token', ''), 'TEST-')
@@ -68,8 +76,20 @@ class MercadoPagoController extends Controller
                 'init_point' => $initPoint,
                 'preferenceId' => $preference->id
             ]);
+        } catch (\MercadoPago\Exceptions\MPApiException $e) {
+            $apiResponse = $e->getApiResponse();
+            $content = $apiResponse ? $apiResponse->getContent() : null;
+            Log::error('Error de API Mercado Pago al crear preferencia:', [
+                'status_code' => $e->getStatusCode(),
+                'message' => $e->getMessage(),
+                'response' => $content
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de Mercado Pago: ' . ($content['message'] ?? $e->getMessage())
+            ], 500);
         } catch (\Exception $e) {
-            Log::error('Error al crear preferencia de Mercado Pago: ' . $e->getMessage());
+            Log::error('Error general al crear preferencia de Mercado Pago: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al inicializar el pago con Mercado Pago: ' . $e->getMessage()

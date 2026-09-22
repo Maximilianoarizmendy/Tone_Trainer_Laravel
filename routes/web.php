@@ -152,4 +152,4 @@ Route::middleware('auth')->group(function () {
         ->name('mercadopago.callback');
 });
 
-Route::post('/mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');
+Route::match(['get', 'post'], '/mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');

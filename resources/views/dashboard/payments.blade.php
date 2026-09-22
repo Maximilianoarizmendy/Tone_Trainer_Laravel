@@ -599,9 +599,13 @@
 
 @section('scripts')
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script>
 const stripePublicKey = @json(config('stripe.public'));
 const stripe = stripePublicKey ? Stripe(stripePublicKey) : null;
+
+const mpPublicKey = @json(config('mercadopago.public_key'));
+const mp = mpPublicKey ? new MercadoPago(mpPublicKey, { locale: 'es-CO' }) : null;
 
 let selectedMembershipId = null;
 let triggeringButton = null;
@@ -710,7 +714,16 @@ async function initMercadoPagoCheckout(membershipId, btn) {
             throw new Error(data.message || 'Error en el servidor.');
         }
 
-        if (data.init_point) {
+        if (data.preferenceId && mp) {
+            mp.checkout({
+                preference: {
+                    id: data.preferenceId
+                },
+                autoOpen: true
+            });
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        } else if (data.init_point) {
             window.location.href = data.init_point;
         } else {
             throw new Error('No se pudo crear la preferencia de Mercado Pago.');
